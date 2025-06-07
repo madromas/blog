@@ -113,7 +113,7 @@ switch ($current_tab) {
         break;
 }
 
-$page_title = 'Админ-панель';
+$page_title = 'Admin-panel';
 include 'includes/header.php';
 ?>
 
@@ -631,11 +631,11 @@ include 'includes/header.php';
     <div class="admin-sidebar">
         <div class="admin-profile">
             <img src="<?= SITE_URL ?>/uploads/<?= getUser($_SESSION['user_id'])['avatar'] ?>" 
-                 alt="Аватар" class="admin-avatar">
+                 alt="Avatar" class="admin-avatar">
             <div class="admin-info">
                 <h3><?= htmlspecialchars(getUser($_SESSION['user_id'])['username']) ?></h3>
                 <span class="admin-role">
-                    <?= getUser($_SESSION['user_id'])['role'] == 'admin' ? 'Администратор' : 'Модератор' ?>
+                    <?= getUser($_SESSION['user_id'])['role'] == 'admin' ? 'Administrator' : 'Moderator' ?>
                 </span>
             </div>
         </div>
@@ -645,44 +645,44 @@ include 'includes/header.php';
                 <li class="<?= $current_tab == 'dashboard' ? 'active' : '' ?>">
                     <a href="admin.php?tab=dashboard">
                         <i class="fas fa-tachometer-alt"></i>
-                        <span>Дашборд</span>
+                        <span>Dashboard</span>
                     </a>
                 </li>
                 <li class="<?= $current_tab == 'users' ? 'active' : '' ?>">
                     <a href="admin.php?tab=users">
                         <i class="fas fa-users"></i>
-                        <span>Пользователи</span>
+                        <span>Users</span>
                     </a>
                 </li>
                 <li class="<?= $current_tab == 'posts' ? 'active' : '' ?>">
                     <a href="admin.php?tab=posts">
                         <i class="fas fa-newspaper"></i>
-                        <span>Посты</span>
+                        <span>Posts</span>
                     </a>
                 </li>
                 <li class="<?= $current_tab == 'comments' ? 'active' : '' ?>">
                     <a href="admin.php?tab=comments">
                         <i class="fas fa-comments"></i>
-                        <span>Комментарии</span>
+                        <span>Comments</span>
                     </a>
                 </li>
                 <li class="<?= $current_tab == 'stories' ? 'active' : '' ?>">
                     <a href="admin.php?tab=stories">
                         <i class="fas fa-history"></i>
-                        <span>Истории</span>
+                        <span>Stories</span>
                     </a>
                 </li>
                 <li class="<?= $current_tab == 'reports' ? 'active' : '' ?>">
                     <a href="admin.php?tab=reports">
                         <i class="fas fa-flag"></i>
-                        <span>Жалобы</span>
+                        <span>Complaints</span>
                     </a>
                 </li>
                 <?php if (hasPermission('admin')): ?>
                 <li class="<?= $current_tab == 'settings' ? 'active' : '' ?>">
                     <a href="admin.php?tab=settings">
                         <i class="fas fa-cog"></i>
-                        <span>Настройки</span>
+                        <span>Settings</span>
                     </a>
                 </li>
                 <?php endif; ?>
@@ -693,10 +693,10 @@ include 'includes/header.php';
     <div class="admin-content">
         <?php if ($current_tab == 'dashboard'): ?>
             <div class="admin-header">
-                <h1><i class="fas fa-tachometer-alt"></i> Дашборд</h1>
+                <h1><i class="fas fa-tachometer-alt"></i> Dashboard</h1>
                 <div class="admin-actions">
                     <button class="btn btn-refresh">
-                        <i class="fas fa-sync-alt"></i> Обновить
+                        <i class="fas fa-sync-alt"></i> Refresh
                     </button>
                 </div>
             </div>
@@ -708,7 +708,7 @@ include 'includes/header.php';
                     </div>
                     <div class="stat-info">
                         <div class="stat-value"><?= $stats['users'] ?></div>
-                        <div class="stat-label">Пользователей</div>
+                        <div class="stat-label">Users</div>
                     </div>
                 </div>
                 
@@ -718,7 +718,7 @@ include 'includes/header.php';
                     </div>
                     <div class="stat-info">
                         <div class="stat-value"><?= $stats['posts'] ?></div>
-                        <div class="stat-label">Постов</div>
+                        <div class="stat-label">Posts</div>
                     </div>
                 </div>
                 
@@ -728,7 +728,7 @@ include 'includes/header.php';
                     </div>
                     <div class="stat-info">
                         <div class="stat-value"><?= $stats['comments'] ?></div>
-                        <div class="stat-label">Комментариев</div>
+                        <div class="stat-label">Comments</div>
                     </div>
                 </div>
                 
@@ -738,7 +738,7 @@ include 'includes/header.php';
                     </div>
                     <div class="stat-info">
                         <div class="stat-value"><?= $stats['stories'] ?></div>
-                        <div class="stat-label">Историй</div>
+                        <div class="stat-label">Stories</div>
                     </div>
                 </div>
                 
@@ -748,17 +748,17 @@ include 'includes/header.php';
                     </div>
                     <div class="stat-info">
                         <div class="stat-value"><?= $stats['reports'] ?></div>
-                        <div class="stat-label">Жалоб</div>
+                        <div class="stat-label">Complaints</div>
                     </div>
                 </div>
             </div>
             
         <?php elseif ($current_tab == 'users'): ?>
             <div class="admin-header">
-                <h1><i class="fas fa-users"></i> Управление пользователями</h1>
+                <h1><i class="fas fa-users"></i> User management</h1>
                 <div class="admin-actions">
                     <button class="btn btn-primary">
-                        <i class="fas fa-plus"></i> Добавить
+                        <i class="fas fa-plus"></i> Add
                     </button>
                 </div>
             </div>
@@ -769,11 +769,11 @@ include 'includes/header.php';
                         <thead>
                             <tr>
                                 <th>ID</th>
-                                <th>Пользователь</th>
+                                <th>User</th>
                                 <th>Email</th>
-                                <th>Роль</th>
-                                <th>Дата регистрации</th>
-                                <th>Действия</th>
+                                <th>Role</th>
+                                <th>Registration date</th>
+                                <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -794,9 +794,9 @@ include 'includes/header.php';
                                             <select name="role" onchange="this.form.submit()" 
                                                     <?= $user['id'] == $_SESSION['user_id'] ? 'disabled' : '' ?>
                                                     class="role-select">
-                                                <option value="user" <?= $user['role'] == 'user' ? 'selected' : '' ?>>Пользователь</option>
-                                                <option value="moderator" <?= $user['role'] == 'moderator' ? 'selected' : '' ?>>Модератор</option>
-                                                <option value="admin" <?= $user['role'] == 'admin' ? 'selected' : '' ?>>Админ</option>
+                                                <option value="user" <?= $user['role'] == 'user' ? 'selected' : '' ?>>User</option>
+                                                <option value="moderator" <?= $user['role'] == 'moderator' ? 'selected' : '' ?>>Moderator</option>
+                                                <option value="admin" <?= $user['role'] == 'admin' ? 'selected' : '' ?>>Administrator</option>
                                             </select>
                                         </form>
                                     </td>
@@ -806,7 +806,7 @@ include 'includes/header.php';
                                             <?php if ($user['id'] != $_SESSION['user_id']): ?>
                                                 <a href="admin_ban_user.php?id=<?= $user['id'] ?>" 
                                                    class="btn btn-danger btn-small"
-                                                   onclick="return confirm('Вы уверены, что хотите забанить этого пользователя?')">
+                                                   onclick="return confirm('Are you sure you want to ban this user?')">
                                                     <i class="fas fa-ban"></i>
                                                 </a>
                                             <?php endif; ?>
@@ -848,7 +848,7 @@ include 'includes/header.php';
             
         <?php elseif ($current_tab == 'posts'): ?>
             <div class="admin-header">
-                <h1><i class="fas fa-newspaper"></i> Управление постами</h1>
+                <h1><i class="fas fa-newspaper"></i> Posts management</h1>
                 <div class="admin-actions">
                     <div class="search-box">
                         <input type="text" placeholder="Поиск постов...">
@@ -865,11 +865,11 @@ include 'includes/header.php';
                         <thead>
                             <tr>
                                 <th>ID</th>
-                                <th>Заголовок</th>
-                                <th>Автор</th>
-                                <th>Дата</th>
-                                <th>Рейтинг</th>
-                                <th>Действия</th>
+                                <th>Title</th>
+                                <th>Author</th>
+                                <th>Date</th>
+                                <th>Rating</th>
+                                <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -893,7 +893,7 @@ include 'includes/header.php';
                                         <div class="action-buttons">
                                             <a href="admin_delete_post.php?id=<?= $post['id'] ?>" 
                                                class="btn btn-danger btn-small"
-                                               onclick="return confirm('Вы уверены, что хотите удалить этот пост?')">
+                                               onclick="return confirm('Are you sure you want to delete this post?')">
                                                 <i class="fas fa-trash"></i>
                                             </a>
                                             <a href="admin_edit_post.php?id=<?= $post['id'] ?>" 
@@ -934,10 +934,10 @@ include 'includes/header.php';
             
         <?php elseif ($current_tab == 'comments'): ?>
             <div class="admin-header">
-                <h1><i class="fas fa-comments"></i> Управление комментариями</h1>
+                <h1><i class="fas fa-comments"></i> Comments management</h1>
                 <div class="admin-actions">
                     <div class="search-box">
-                        <input type="text" placeholder="Поиск комментариев...">
+                        <input type="text" placeholder="Comments search...">
                         <button class="btn btn-search">
                             <i class="fas fa-search"></i>
                         </button>
@@ -951,11 +951,11 @@ include 'includes/header.php';
                         <thead>
                             <tr>
                                 <th>ID</th>
-                                <th>Комментарий</th>
-                                <th>Автор</th>
-                                <th>К посту</th>
-                                <th>Дата</th>
-                                <th>Действия</th>
+                                <th>Comment</th>
+                                <th>Author</th>
+                                <th>To post</th>
+                                <th>Date</th>
+                                <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -978,7 +978,7 @@ include 'includes/header.php';
                                                 <?= strlen($comment['post_title']) > 30 ? '...' : '' ?>
                                             </a>
                                         <?php else: ?>
-                                            <span class="text-muted">Удалён</span>
+                                            <span class="text-muted">Deleted</span>
                                         <?php endif; ?>
                                     </td>
                                     <td><?= date('d.m.Y H:i', strtotime($comment['created_at'])) ?></td>
@@ -986,7 +986,7 @@ include 'includes/header.php';
                                         <div class="action-buttons">
                                             <a href="admin_delete_comment.php?id=<?= $comment['id'] ?>" 
                                                class="btn btn-danger btn-small"
-                                               onclick="return confirm('Вы уверены, что хотите удалить этот комментарий?')">
+                                               onclick="return confirm('Are you sure you want to delete this comment?')">
                                                 <i class="fas fa-trash"></i>
                                             </a>
                                         </div>
@@ -1023,10 +1023,10 @@ include 'includes/header.php';
             
         <?php elseif ($current_tab == 'stories'): ?>
             <div class="admin-header">
-                <h1><i class="fas fa-history"></i> Управление историями</h1>
+                <h1><i class="fas fa-history"></i> Stories management</h1>
                 <div class="admin-actions">
                     <button class="btn btn-refresh">
-                        <i class="fas fa-sync-alt"></i> Обновить
+                        <i class="fas fa-sync-alt"></i> Refresh
                     </button>
                 </div>
             </div>
@@ -1037,11 +1037,11 @@ include 'includes/header.php';
                         <thead>
                             <tr>
                                 <th>ID</th>
-                                <th>Контент</th>
-                                <th>Автор</th>
-                                <th>Дата</th>
-                                <th>Истекает</th>
-                                <th>Действия</th>
+                                <th>Content</th>
+                                <th>Author</th>
+                                <th>Date</th>
+                                <th>Expired</th>
+                                <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -1067,7 +1067,7 @@ include 'includes/header.php';
                                         <div class="action-buttons">
                                             <a href="admin_delete_story.php?id=<?= $story['id'] ?>" 
                                                class="btn btn-danger btn-small"
-                                               onclick="return confirm('Вы уверены, что хотите удалить эту историю?')">
+                                               onclick="return confirm('Are you sure you want to delete this story?')">
                                                 <i class="fas fa-trash"></i>
                                             </a>
                                         </div>
@@ -1104,10 +1104,10 @@ include 'includes/header.php';
             
         <?php elseif ($current_tab == 'reports'): ?>
             <div class="admin-header">
-                <h1><i class="fas fa-flag"></i> Жалобы на контент</h1>
+                <h1><i class="fas fa-flag"></i> Content complaints</h1>
                 <div class="admin-actions">
                     <button class="btn btn-refresh">
-                        <i class="fas fa-sync-alt"></i> Обновить
+                        <i class="fas fa-sync-alt"></i> Refresh
                     </button>
                 </div>
             </div>
@@ -1115,37 +1115,37 @@ include 'includes/header.php';
             <?php if (empty($reports)): ?>
                 <div class="empty-state">
                     <i class="fas fa-check-circle empty-icon"></i>
-                    <h3>Нет активных жалоб</h3>
-                    <p>Все жалобы обработаны</p>
+                    <h3>No active complaints</h3>
+                    <p>All complaints have been processed</p>
                 </div>
             <?php else: ?>
                 <div class="reports-list">
                     <?php foreach ($reports as $report): ?>
                         <div class="report-card">
                             <div class="report-header">
-                                <span class="report-id">Жалоба #<?= $report['id'] ?></span>
+                                <span class="report-id">Complaint #<?= $report['id'] ?></span>
                                 <span class="report-date"><?= date('d.m.Y H:i', strtotime($report['created_at'])) ?></span>
                             </div>
                             
                             <div class="report-content">
                                 <div class="report-section">
-                                    <div class="section-title">Причина:</div>
+                                    <div class="section-title">Reason:</div>
                                     <div class="section-content"><?= htmlspecialchars($report['reason']) ?></div>
                                 </div>
                                 
                                 <div class="report-section">
-                                    <div class="section-title">Контент:</div>
+                                    <div class="section-title">Content:</div>
                                     <div class="section-content">
                                         <?php if ($report['post_id']): ?>
-                                            <strong>Пост:</strong> 
+                                            <strong>Post:</strong> 
                                             <a href="post.php?id=<?= $report['post_id'] ?>" target="_blank">
                                                 <?= htmlspecialchars($report['post_title']) ?>
                                             </a>
                                         <?php elseif ($report['comment_id']): ?>
-                                            <strong>Комментарий:</strong> 
+                                            <strong>Comment:</strong> 
                                             <?= htmlspecialchars(substr($report['comment_content'], 0, 100)) ?>...
                                         <?php elseif ($report['story_id']): ?>
-                                            <strong>История:</strong> 
+                                            <strong>Story:</strong> 
                                             <?= htmlspecialchars(substr($report['story_content'], 0, 100)) ?>...
                                         <?php endif; ?>
                                     </div>
@@ -1153,7 +1153,7 @@ include 'includes/header.php';
                                 
                                 <div class="report-users">
                                     <div class="user-card">
-                                        <div class="section-title">Жалоба от:</div>
+                                        <div class="section-title">Complaint from:</div>
                                         <div class="section-content">
                                             <a href="profile.php?id=<?= $report['reporter_id'] ?>" class="user-link">
                                                 <?= htmlspecialchars($report['reporter_name']) ?>
@@ -1161,7 +1161,7 @@ include 'includes/header.php';
                                         </div>
                                     </div>
                                     <div class="user-card">
-                                        <div class="section-title">Автор контента:</div>
+                                        <div class="section-title">Content author:</div>
                                         <div class="section-content">
                                             <a href="profile.php?id=<?= $report['reported_user_id'] ?>" class="user-link">
                                                 <?= htmlspecialchars($report['reported_user_name']) ?>
@@ -1176,7 +1176,7 @@ include 'includes/header.php';
                                     <input type="hidden" name="report_id" value="<?= $report['id'] ?>">
                                     <input type="hidden" name="action" value="approve">
                                     <button type="submit" class="btn btn-success">
-                                        <i class="fas fa-check"></i> Принять
+                                        <i class="fas fa-check"></i> Accept
                                     </button>
                                 </form>
                                 
@@ -1184,7 +1184,7 @@ include 'includes/header.php';
                                     <input type="hidden" name="report_id" value="<?= $report['id'] ?>">
                                     <input type="hidden" name="action" value="reject">
                                     <button type="submit" class="btn btn-danger">
-                                        <i class="fas fa-times"></i> Отклонить
+                                        <i class="fas fa-times"></i> Decline
                                     </button>
                                 </form>
                             </div>
@@ -1195,45 +1195,45 @@ include 'includes/header.php';
             
         <?php elseif ($current_tab == 'settings' && hasPermission('admin')): ?>
             <div class="admin-header">
-                <h1><i class="fas fa-cog"></i> Настройки сайта</h1>
+                <h1><i class="fas fa-cog"></i> Site settings</h1>
             </div>
             
             <form action="admin_update_settings.php" method="POST" class="settings-form">
                 <div class="form-group">
-                    <label for="site_name" class="form-label">Название сайта</label>
+                    <label for="site_name" class="form-label">Site name</label>
                     <input type="text" id="site_name" name="site_name" class="form-input" 
                            value="<?= htmlspecialchars(SITE_NAME) ?>">
                 </div>
                 
                 <div class="form-group">
-                    <label for="site_url" class="form-label">URL сайта</label>
+                    <label for="site_url" class="form-label">Site URL</label>
                     <input type="text" id="site_url" name="site_url" class="form-input" 
                            value="<?= htmlspecialchars(SITE_URL) ?>">
                 </div>
                 
                 <div class="form-group">
-                    <label for="posts_per_page" class="form-label">Постов на странице</label>
+                    <label for="posts_per_page" class="form-label">Posts on the page</label>
                     <input type="number" id="posts_per_page" name="posts_per_page" class="form-input" 
                            value="10" min="1" max="50">
                 </div>
                 
                 <div class="form-group">
-                    <label for="stories_lifetime" class="form-label">Время жизни историй (часов)</label>
+                    <label for="stories_lifetime" class="form-label">Lifetime of stories (hours)</label>
                     <input type="number" id="stories_lifetime" name="stories_lifetime" class="form-input" 
                            value="24" min="1" max="168">
                 </div>
                 
                 <div class="form-group">
-                    <label for="default_user_role" class="form-label">Роль по умолчанию для новых пользователей</label>
+                    <label for="default_user_role" class="form-label">The default role for new users</label>
                     <select id="default_user_role" name="default_user_role" class="form-select">
-                        <option value="user">Пользователь</option>
-                        <option value="moderator">Модератор</option>
+                        <option value="user">User</option>
+                        <option value="moderator">Moderator</option>
                     </select>
                 </div>
                 
                 <div class="form-actions">
                     <button type="submit" class="btn btn-primary btn-large">
-                        <i class="fas fa-save"></i> Сохранить настройки
+                        <i class="fas fa-save"></i> Save settings
                     </button>
                 </div>
             </form>

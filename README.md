@@ -1,5 +1,5 @@
-# blog
-Another simple blog. This is working, but unfinished blog. Some files are missing. Overall usable. Anyone can fork it, and contribute to it.
+# Simple, lightweight community blog
+Another simple blog. This is working, but unfinished blog. Some files are missing. Overall usable. Translated to English. Anyone can fork it, and contribute to it.
 
 ![Screenshot 2025-06-06 201533](https://github.com/user-attachments/assets/d5456dfe-a2b3-4507-b245-bc8c56e3d7f9)
 

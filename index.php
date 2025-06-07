@@ -419,6 +419,9 @@ include 'includes/header.php';
                         <span class="post-author"><a href="profile.php?id=<?= $post['user_id'] ?>"><i class="fas fa-user"></i> <?= htmlspecialchars($post['username']) ?></a></span>
                         <span class="post-date"><i class="far fa-clock"></i> <?= date('d.m.Y H:i', strtotime($post['created_at'])) ?></span>
                         <span class="post-comments"><i class="fas fa-comment"></i> <?= $post['comments_count'] ?></span>
+                        <span class="post-views">
+                <i class="fas fa-eye"></i> <?= $post['views'] ?>
+            </span>
                     </div>
                 </div>
             </div>

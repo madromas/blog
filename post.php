@@ -299,7 +299,7 @@ include 'includes/header.php';
     
     <div class="comments-list">
         <?php if (empty($comments)): ?>
-            <div class="alert alert-info">No comments yet.<br> Be the first!</div>
+            <div class="alert alert-info">No comments yet. Be the first!</div>
         <?php else: ?>
             <?php foreach ($comments as $comment): ?>
                 <div class="comment">

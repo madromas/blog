@@ -438,7 +438,7 @@ include 'includes/header.php';
                         <div class="progress-bar" style="width: <?= $level['progress'] ?>%"></div>
                     </div>
                     <span class="progress-text">
-                        <?= $user['rating'] ?? 0 ?> из <?= $level['next_level_points'] ?> points
+                        <?= $user['rating'] ?? 0 ?> out of <?= $level['next_level_points'] ?> points
                     </span>
                 </div>
             </div>

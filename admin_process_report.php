@@ -49,9 +49,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['report_id']) && isset
                 }
             }
             
-            $_SESSION['success'] = 'Жалоба принята, контент удален';
+            $_SESSION['success'] = 'The complaint has been accepted and the content has been deleted';
         } else {
-            $_SESSION['success'] = 'Жалоба отклонена';
+            $_SESSION['success'] = 'The complaint was rejected';
         }
     }
 }

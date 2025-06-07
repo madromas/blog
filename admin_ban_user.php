@@ -13,7 +13,7 @@ if (isset($_GET['id']) && is_numeric($_GET['id'])) {
     
     // Нельзя забанить себя
     if ($user_id == $_SESSION['user_id']) {
-        $_SESSION['error'] = 'Вы не можете забанить себя';
+        $_SESSION['error'] = 'You cannot ban your self';
         header('Location: admin.php?tab=users');
         exit;
     }
@@ -59,10 +59,10 @@ if (isset($_GET['id']) && is_numeric($_GET['id'])) {
         $pdo->prepare("DELETE FROM users WHERE id = ?")->execute([$user_id]);
         
         $pdo->commit();
-        $_SESSION['success'] = 'Пользователь и весь его контент успешно удалены';
+        $_SESSION['success'] = 'The user and all his content have been successfully deleted';
     } catch (Exception $e) {
         $pdo->rollBack();
-        $_SESSION['error'] = 'Ошибка при удалении пользователя: ' . $e->getMessage();
+        $_SESSION['error'] = 'Error when deleting a user: ' . $e->getMessage();
     }
 }
 

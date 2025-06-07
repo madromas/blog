@@ -14,13 +14,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['user_id']) && isset($
     
     // Нельзя изменить свою роль
     if ($user_id == $_SESSION['user_id']) {
-        $_SESSION['error'] = 'Вы не можете изменить свою роль';
+        $_SESSION['error'] = 'You can not change your role.';
         header('Location: admin.php?tab=users');
         exit;
     }
     
     $pdo->prepare("UPDATE users SET role = ? WHERE id = ?")->execute([$role, $user_id]);
-    $_SESSION['success'] = 'Роль пользователя успешно обновлена';
+    $_SESSION['success'] = 'The user role has been successfully updated';
 }
 
 header('Location: admin.php?tab=users');

@@ -173,7 +173,7 @@ include 'includes/header.php';
             <input type="password" id="password" name="password" required>
         </div>
         
-        <button type="submit" class="btn btn-primary">Enter</button>
+        <button type="submit" class="btn btn-primary">Login</button>
     </form>
     
     <div class="auth-links">

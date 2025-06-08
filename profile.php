@@ -2,13 +2,24 @@
 require_once 'includes/config.php';
 require_once 'includes/functions.php';
 
-if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
-    header('Location: index.php');
+// Get the user ID from the URL (or however you're passing it)
+$profile_user_id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
+
+// Get the ID of the currently logged-in user (if any)
+$current_user_id = isLoggedIn() ? $_SESSION['user_id'] : null;
+
+// Fetch the user profile, respecting privacy settings
+$userProfile = getUserProfile($profile_user_id, $current_user_id);
+
+if ($userProfile === null) {
+    // User not found or not authorized to view the profile
+    http_response_code(404);
+    include('includes/error.php');  // Or display a "Profile not found" or "Access denied" message
     exit;
 }
 
 $user_id = (int)$_GET['id'];
-$user = getUser($user_id);
+$user = $userProfile;
 
 if (!$user) {
     header('Location: index.php');
@@ -438,7 +449,7 @@ include 'includes/header.php';
                         <div class="progress-bar" style="width: <?= $level['progress'] ?>%"></div>
                     </div>
                     <span class="progress-text">
-                        <?= $user['rating'] ?? 0 ?> из <?= $level['next_level_points'] ?> points
+                        <?= $user['rating'] ?? 0 ?> out of <?= $level['next_level_points'] ?> points
                     </span>
                 </div>
             </div>

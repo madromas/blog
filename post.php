@@ -2,12 +2,24 @@
 require_once 'includes/config.php';
 require_once 'includes/functions.php';
 
-if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
-    header('Location: index.php');
-    exit;
+// Get the post ID from the URL
+$post_id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
+
+// Start or resume the session
+if (session_status() == PHP_SESSION_NONE) {
+    session_start();
 }
 
-$post_id = (int)$_GET['id'];
+// Check if the post has already been viewed in this session
+$session_view_key = 'viewed_post_' . $post_id;
+
+if (!isset($_SESSION[$session_view_key])) {
+    // If not viewed, increment the view count in the database
+    incrementPostViews($post_id);
+
+    // Mark the post as viewed in this session
+    $_SESSION[$session_view_key] = true;
+}
 
 // Получение информации о посте
 $stmt = $pdo->prepare("
@@ -35,13 +47,21 @@ $stmt = $pdo->prepare("
 $stmt->execute([$post_id]);
 $comments = $stmt->fetchAll();
 
-// Увеличение счетчика просмотров
-$pdo->prepare("UPDATE posts SET views = views + 1 WHERE id = ?")->execute([$post_id]);
+// Увеличение счетчика просмотров this is it :)))
+//$pdo->prepare("UPDATE posts SET views = views + 1 WHERE id = ?")->execute([$post_id]); REMOVE THIS!!!
 
 $page_title = $post['title'];
 include 'includes/header.php';
 ?>
 <style>
+    .comment-actions {
+        margin-top: 5px;
+        float:right;
+    }
+    .post-actions {
+        margin-top: 5px;
+        float:right;
+    }
     .post-full {
         display: flex;
         background-color: var(--card-bg);
@@ -110,11 +130,6 @@ include 'includes/header.php';
     }
 
     .post-author a:hover {
-        color: var(--accent-green);
-    }
-
-    .post-meta i {
-        margin-right: 5px;
         color: var(--accent-green);
     }
 
@@ -239,10 +254,38 @@ include 'includes/header.php';
         </button>
     </div>
     <div class="post-content">
+
+<?php
+        // Check if the user is logged in
+        if (isLoggedIn()) {
+            // Get the current user's ID
+            $current_user_id = $_SESSION['user_id'];
+
+            // Check if the current user is the author of the post, an admin, or a moderator
+            $is_author = ($current_user_id == $post['user_id']);
+            $is_admin = hasPermission('admin');
+            $is_moderator = hasPermission('moderator'); // Replace with your actual moderator permission check
+
+            // If the user has permission, display the Edit and Delete buttons
+            if ($is_author || $is_admin || $is_moderator) {
+        ?>
+                <div class="post-actions">
+                    <a href="edit_post.php?id=<?= $post_id ?>" class="btn btn-edit btn-small">
+                                                <i class="fas fa-edit"></i></a>
+                    <a href="delete_post.php?id=<?= $post_id ?>" class="btn btn-danger btn-small" onclick="return confirm('Are you sure you want to delete this post?')">
+                                                <i class="fas fa-trash"></i></a>
+                </div>
+        <?php
+            }
+        }
+        ?>
+        
         <h1><?= htmlspecialchars($post['title']) ?></h1>
+        
         <div class="post-meta">
+            
             <span class="post-author">
-                <img src="<?= SITE_URL ?>/uploads/<?= $post['avatar'] ?? 'default.png' ?>" alt="Аватар" class="avatar">
+                <img src="<?= SITE_URL ?>/uploads/<?= $post['avatar'] ?? 'default.png' ?>" alt="Avatar" class="avatar">
                 <a href="profile.php?id=<?= $post['user_id'] ?>"><?= htmlspecialchars($post['username']) ?></a>
             </span>
             <span class="post-date">
@@ -260,7 +303,7 @@ include 'includes/header.php';
         <?php endif; ?>
         
         <div class="post-text-full">
-            <?= nl2br(htmlspecialchars($post['content'])) ?>
+            <p><?= html_entity_decode(htmlspecialchars($post['content'])) ?></p>
         </div>
         
         <?php if (!empty($post['tags'])): ?>
@@ -303,6 +346,33 @@ include 'includes/header.php';
         <?php else: ?>
             <?php foreach ($comments as $comment): ?>
                 <div class="comment">
+
+
+
+<?php
+                    // Check if the user is logged in
+                    if (isLoggedIn()) {
+                        // Get the current user's ID
+                        $current_user_id = $_SESSION['user_id'];
+
+                        // Check if the current user is the author of the comment, an admin, or a moderator
+                        $is_author = ($current_user_id == $comment['user_id']); // Assuming you have user_id in the comments table
+                        $is_admin = hasPermission('admin');
+                        $is_moderator = hasPermission('moderator'); // Replace with your actual moderator permission check
+
+                        // If the user has permission, display the Edit and Delete buttons
+                        if ($is_author || $is_admin || $is_moderator) {
+                    ?>
+                            <div class="comment-actions">
+                                <a href="delete_comment.php?id=<?= $comment['id'] ?>" class="btn btn-danger btn-small" onclick="return confirm('Are you sure you want to delete this comment?')"><i class="fas fa-trash"></i></a>
+                            </div>
+                    <?php
+                        }
+                    }
+                    ?>
+
+
+
                     <div class="comment-author">
                         <img src="<?= SITE_URL ?>/uploads/<?= $comment['avatar'] ?? 'default.png' ?>" alt="Avatar" class="avatar">
                         <a href="profile.php?id=<?= $comment['user_id'] ?>"><?= htmlspecialchars($comment['username']) ?></a>
@@ -312,13 +382,15 @@ include 'includes/header.php';
                             </a>
                         <?php endif; ?>
                     </div>
+
                     <div class="comment-content">
-                        <?= nl2br(htmlspecialchars($comment['content'])) ?>
+                        <?= nl2br(html_entity_decode(htmlspecialchars($comment['content']))) ?>
                     </div>
                     <div class="comment-meta">
                         <span class="comment-date">
                             <i class="far fa-clock"></i> <?= date('d.m.Y H:i', strtotime($comment['created_at'])) ?>
                         </span>
+                        
                     </div>
                 </div>
             <?php endforeach; ?>

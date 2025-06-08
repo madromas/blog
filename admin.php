@@ -1,4 +1,5 @@
 <?php
+ob_start(); // Start output buffering
 require_once 'includes/config.php';
 require_once 'includes/functions.php';
 
@@ -14,6 +15,17 @@ if (!in_array($current_tab, $allowed_tabs)) {
     $current_tab = 'dashboard';
 }
 
+// Check for the edit post action from admin_edit_post.php
+if (isset($_SESSION['admin_tab']) && $_SESSION['admin_tab'] === 'edit_post' && isset($_SESSION['edit_post_id'])) {
+    $current_tab = 'posts';  // Ensure the posts tab is active
+    $edit_post_id = (int)$_SESSION['edit_post_id'];  // Get the post ID
+    unset($_SESSION['admin_tab']); // Clean session variables to prevent accidental re-display
+    unset($_SESSION['edit_post_id']);
+} else {
+    $edit_post_id = 0; //No edit post, so set to 0.
+}
+
+
 switch ($current_tab) {
     case 'dashboard':
         $stats = [
@@ -24,22 +36,22 @@ switch ($current_tab) {
             'reports' => $pdo->query("SELECT COUNT(*) FROM content_reports WHERE status = 'pending'")->fetchColumn()
         ];
         break;
-        
+
     case 'users':
         $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
         $per_page = 20;
         $offset = ($page - 1) * $per_page;
-        
+
         $users = $pdo->query("SELECT * FROM users ORDER BY id DESC LIMIT $offset, $per_page")->fetchAll();
         $total_users = $pdo->query("SELECT COUNT(*) FROM users")->fetchColumn();
         $total_pages = ceil($total_users / $per_page);
         break;
-        
+
     case 'posts':
         $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
         $per_page = 15;
         $offset = ($page - 1) * $per_page;
-        
+
         $posts = $pdo->query("
             SELECT p.*, u.username 
             FROM posts p
@@ -47,16 +59,16 @@ switch ($current_tab) {
             ORDER BY p.created_at DESC 
             LIMIT $offset, $per_page
         ")->fetchAll();
-        
+
         $total_posts = $pdo->query("SELECT COUNT(*) FROM posts")->fetchColumn();
         $total_pages = ceil($total_posts / $per_page);
         break;
-        
+
     case 'comments':
         $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
         $per_page = 25;
         $offset = ($page - 1) * $per_page;
-        
+
         $comments = $pdo->query("
             SELECT c.*, u.username, p.title as post_title 
             FROM comments c
@@ -65,16 +77,16 @@ switch ($current_tab) {
             ORDER BY c.created_at DESC 
             LIMIT $offset, $per_page
         ")->fetchAll();
-        
+
         $total_comments = $pdo->query("SELECT COUNT(*) FROM comments")->fetchColumn();
         $total_pages = ceil($total_comments / $per_page);
         break;
-        
+
     case 'stories':
         $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
         $per_page = 15;
         $offset = ($page - 1) * $per_page;
-        
+
         $stories = $pdo->query("
             SELECT s.*, u.username 
             FROM stories s
@@ -82,11 +94,11 @@ switch ($current_tab) {
             ORDER BY s.created_at DESC 
             LIMIT $offset, $per_page
         ")->fetchAll();
-        
+
         $total_stories = $pdo->query("SELECT COUNT(*) FROM stories")->fetchColumn();
         $total_pages = ceil($total_stories / $per_page);
         break;
-        
+
     case 'reports':
         $reports = $pdo->query("
             SELECT r.*, 
@@ -124,7 +136,7 @@ include 'includes/header.php';
         min-height: calc(100vh - 150px);
         margin: 20px 0;
     }
-    
+
     .admin-sidebar {
         width: 250px;
         background-color: var(--card-bg);
@@ -133,7 +145,7 @@ include 'includes/header.php';
         margin-right: 20px;
         box-shadow: var(--shadow);
     }
-    
+
     .admin-profile {
         display: flex;
         flex-direction: column;
@@ -142,7 +154,7 @@ include 'includes/header.php';
         margin-bottom: 20px;
         border-bottom: 1px solid #333;
     }
-    
+
     .admin-avatar {
         width: 80px;
         height: 80px;
@@ -151,16 +163,16 @@ include 'includes/header.php';
         border: 3px solid var(--accent-green);
         margin-bottom: 10px;
     }
-    
+
     .admin-info {
         text-align: center;
     }
-    
+
     .admin-info h3 {
         margin: 5px 0;
         font-size: 1.1rem;
     }
-    
+
     .admin-role {
         display: inline-block;
         padding: 3px 8px;
@@ -170,15 +182,15 @@ include 'includes/header.php';
         font-size: 0.8rem;
         font-weight: 600;
     }
-    
+
     .admin-nav ul {
         list-style: none;
     }
-    
+
     .admin-nav li {
         margin-bottom: 5px;
     }
-    
+
     .admin-nav li a {
         display: flex;
         align-items: center;
@@ -186,24 +198,24 @@ include 'includes/header.php';
         border-radius: var(--border-radius);
         color: var(--text-secondary);
     }
-    
+
     .admin-nav li a i {
         margin-right: 10px;
         width: 20px;
         text-align: center;
     }
-    
+
     .admin-nav li a:hover {
         background-color: rgba(76, 175, 80, 0.1);
         color: var(--text-primary);
     }
-    
+
     .admin-nav li.active a {
         background-color: rgba(76, 175, 80, 0.2);
         color: var(--accent-green);
         font-weight: 600;
     }
-    
+
     .admin-content {
         flex: 1;
         background-color: var(--card-bg);
@@ -211,7 +223,7 @@ include 'includes/header.php';
         padding: 20px;
         box-shadow: var(--shadow);
     }
-    
+
     .admin-header {
         display: flex;
         justify-content: space-between;
@@ -220,23 +232,23 @@ include 'includes/header.php';
         padding-bottom: 15px;
         border-bottom: 1px solid #333;
     }
-    
+
     .admin-header h1 {
         display: flex;
         align-items: center;
         font-size: 1.5rem;
     }
-    
+
     .admin-header h1 i {
         margin-right: 10px;
         color: var(--accent-green);
     }
-    
+
     .admin-actions {
         display: flex;
         gap: 10px;
     }
-    
+
     .btn {
         padding: 8px 16px;
         border-radius: var(--border-radius);
@@ -248,61 +260,61 @@ include 'includes/header.php';
         align-items: center;
         justify-content: center;
     }
-    
+
     .btn i {
         margin-right: 5px;
     }
-    
+
     .btn-primary {
         background: var(--accent-gradient);
         color: white;
     }
-    
+
     .btn-primary:hover {
         opacity: 0.9;
     }
-    
+
     .btn-refresh {
         background-color: rgba(76, 175, 80, 0.1);
         color: var(--accent-green);
     }
-    
+
     .btn-refresh:hover {
         background-color: rgba(76, 175, 80, 0.2);
     }
-    
+
     .btn-danger {
         background-color: rgba(244, 67, 54, 0.1);
         color: #f44336;
     }
-    
+
     .btn-danger:hover {
         background-color: rgba(244, 67, 54, 0.2);
     }
-    
+
     .btn-success {
         background-color: rgba(76, 175, 80, 0.1);
         color: var(--accent-green);
     }
-    
+
     .btn-success:hover {
         background-color: rgba(76, 175, 80, 0.2);
     }
-    
+
     .btn-small {
         padding: 5px 10px;
         font-size: 0.8rem;
     }
-    
+
     .btn-large {
         padding: 10px 20px;
         font-size: 1rem;
     }
-    
+
     .search-box {
         display: flex;
     }
-    
+
     .search-box input {
         padding: 8px 12px;
         border: 1px solid #333;
@@ -311,17 +323,17 @@ include 'includes/header.php';
         color: var(--text-primary);
         outline: none;
     }
-    
+
     .search-box input:focus {
         border-color: var(--accent-green);
     }
-    
+
     .btn-search {
         border-radius: 0 var(--border-radius) var(--border-radius) 0;
         background-color: var(--accent-green);
         color: white;
     }
-    
+
     /* Stats Grid */
     .stats-grid {
         display: grid;
@@ -329,7 +341,7 @@ include 'includes/header.php';
         gap: 15px;
         margin-bottom: 20px;
     }
-    
+
     .stat-card {
         background-color: var(--darker-bg);
         border-radius: var(--border-radius);
@@ -337,7 +349,7 @@ include 'includes/header.php';
         display: flex;
         align-items: center;
     }
-    
+
     .stat-icon {
         width: 50px;
         height: 50px;
@@ -350,48 +362,48 @@ include 'includes/header.php';
         color: var(--accent-green);
         font-size: 1.2rem;
     }
-    
+
     .stat-value {
         font-size: 1.3rem;
         font-weight: 700;
     }
-    
+
     .stat-label {
         font-size: 0.8rem;
         color: var(--text-secondary);
     }
-    
+
     /* Tables */
     .admin-table-container {
         overflow-x: auto;
     }
-    
+
     .admin-table {
         width: 100%;
         border-collapse: collapse;
     }
-    
+
     .admin-table th {
         background-color: var(--darker-bg);
         padding: 12px 15px;
         text-align: left;
         font-weight: 600;
     }
-    
+
     .admin-table td {
         padding: 12px 15px;
         border-bottom: 1px solid #333;
     }
-    
+
     .admin-table tr:hover {
         background-color: rgba(76, 175, 80, 0.05);
     }
-    
+
     .user-link {
         display: flex;
         align-items: center;
     }
-    
+
     .user-avatar {
         width: 30px;
         height: 30px;
@@ -399,19 +411,19 @@ include 'includes/header.php';
         object-fit: cover;
         margin-right: 10px;
     }
-    
+
     .post-link {
         color: var(--accent-green);
     }
-    
+
     .post-link:hover {
         text-decoration: underline;
     }
-    
+
     .role-form {
         display: inline-block;
     }
-    
+
     .role-select {
         padding: 5px 8px;
         border-radius: var(--border-radius);
@@ -420,16 +432,16 @@ include 'includes/header.php';
         border: 1px solid #333;
         outline: none;
     }
-    
+
     .role-select:focus {
         border-color: var(--accent-green);
     }
-    
+
     .action-buttons {
         display: flex;
         gap: 5px;
     }
-    
+
     .story-preview {
         width: 50px;
         height: 50px;
@@ -437,19 +449,19 @@ include 'includes/header.php';
         border-radius: 4px;
         margin-right: 10px;
     }
-    
+
     /* Reports */
     .reports-list {
         display: grid;
         gap: 15px;
     }
-    
+
     .report-card {
         background-color: var(--darker-bg);
         border-radius: var(--border-radius);
         padding: 15px;
     }
-    
+
     .report-header {
         display: flex;
         justify-content: space-between;
@@ -457,65 +469,65 @@ include 'includes/header.php';
         padding-bottom: 10px;
         border-bottom: 1px solid #333;
     }
-    
+
     .report-id {
         font-weight: 600;
         color: var(--accent-green);
     }
-    
+
     .report-date {
         color: var(--text-secondary);
         font-size: 0.8rem;
     }
-    
+
     .report-section {
         margin-bottom: 10px;
     }
-    
+
     .section-title {
         font-weight: 600;
         margin-bottom: 5px;
         color: var(--accent-green);
     }
-    
+
     .report-users {
         display: grid;
         grid-template-columns: 1fr 1fr;
         gap: 15px;
         margin: 15px 0;
     }
-    
+
     .user-card {
         background-color: rgba(0, 0, 0, 0.2);
         padding: 10px;
         border-radius: var(--border-radius);
     }
-    
+
     .report-actions {
         display: flex;
         gap: 10px;
         margin-top: 15px;
     }
-    
+
     .report-form {
         display: inline-block;
     }
-    
+
     /* Settings Form */
     .settings-form {
         max-width: 600px;
     }
-    
+
     .form-group {
         margin-bottom: 15px;
     }
-    
+
     .form-label {
         display: block;
         margin-bottom: 5px;
         font-weight: 600;
     }
-    
+
     .form-input {
         width: 100%;
         padding: 10px;
@@ -525,11 +537,11 @@ include 'includes/header.php';
         color: var(--text-primary);
         outline: none;
     }
-    
+
     .form-input:focus {
         border-color: var(--accent-green);
     }
-    
+
     .form-select {
         width: 100%;
         padding: 10px;
@@ -539,34 +551,34 @@ include 'includes/header.php';
         color: var(--text-primary);
         outline: none;
     }
-    
+
     .form-select:focus {
         border-color: var(--accent-green);
     }
-    
+
     .form-actions {
         margin-top: 20px;
     }
-    
+
     /* Empty State */
     .empty-state {
         text-align: center;
         padding: 40px 20px;
     }
-    
+
     .empty-icon {
         font-size: 3rem;
         color: var(--accent-green);
         margin-bottom: 15px;
     }
-    
+
     /* Pagination */
     .pagination {
         display: flex;
         justify-content: center;
         margin-top: 20px;
     }
-    
+
     .page-link {
         padding: 8px 12px;
         margin: 0 3px;
@@ -575,52 +587,52 @@ include 'includes/header.php';
         color: var(--text-primary);
         transition: var(--transition);
     }
-    
+
     .page-link:hover {
         background-color: rgba(76, 175, 80, 0.2);
     }
-    
+
     .page-link.active {
         background: var(--accent-gradient);
         color: white;
     }
-    
+
     /* Responsive */
     @media (max-width: 992px) {
         .admin-container {
             flex-direction: column;
         }
-        
+
         .admin-sidebar {
             width: 100%;
             margin-right: 0;
             margin-bottom: 20px;
         }
-        
+
         .stats-grid {
             grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
         }
     }
-    
+
     @media (max-width: 768px) {
         .admin-header {
             flex-direction: column;
             align-items: flex-start;
         }
-        
+
         .admin-actions {
             margin-top: 10px;
             width: 100%;
         }
-        
+
         .search-box {
             width: 100%;
         }
-        
+
         .search-box input {
             flex: 1;
         }
-        
+
         .report-users {
             grid-template-columns: 1fr;
         }
@@ -639,7 +651,7 @@ include 'includes/header.php';
                 </span>
             </div>
         </div>
-        
+
         <nav class="admin-nav">
             <ul>
                 <li class="<?= $current_tab == 'dashboard' ? 'active' : '' ?>">
@@ -679,18 +691,29 @@ include 'includes/header.php';
                     </a>
                 </li>
                 <?php if (hasPermission('admin')): ?>
-                <li class="<?= $current_tab == 'settings' ? 'active' : '' ?>">
-                    <a href="admin.php?tab=settings">
-                        <i class="fas fa-cog"></i>
-                        <span>Settings</span>
-                    </a>
-                </li>
+                    <li class="<?= $current_tab == 'settings' ? 'active' : '' ?>">
+                        <a href="admin.php?tab=settings">
+                            <i class="fas fa-cog"></i>
+                            <span>Settings</span>
+                        </a>
+                    </li>
                 <?php endif; ?>
             </ul>
         </nav>
     </div>
-    
+
     <div class="admin-content">
+
+       <?php if (isset($_SESSION['message'])): ?>
+            <div class="alert alert-<?= htmlspecialchars($_SESSION['message_type']) ?>">
+                <?= htmlspecialchars($_SESSION['message']) ?>
+            </div>
+            <?php
+            unset($_SESSION['message']);
+            unset($_SESSION['message_type']);
+            ?>
+        <?php endif; ?>
+
         <?php if ($current_tab == 'dashboard'): ?>
             <div class="admin-header">
                 <h1><i class="fas fa-tachometer-alt"></i> Dashboard</h1>
@@ -700,7 +723,7 @@ include 'includes/header.php';
                     </button>
                 </div>
             </div>
-            
+
             <div class="stats-grid">
                 <div class="stat-card">
                     <div class="stat-icon">
@@ -711,7 +734,7 @@ include 'includes/header.php';
                         <div class="stat-label">Users</div>
                     </div>
                 </div>
-                
+
                 <div class="stat-card">
                     <div class="stat-icon">
                         <i class="fas fa-newspaper"></i>
@@ -721,7 +744,7 @@ include 'includes/header.php';
                         <div class="stat-label">Posts</div>
                     </div>
                 </div>
-                
+
                 <div class="stat-card">
                     <div class="stat-icon">
                         <i class="fas fa-comments"></i>
@@ -731,7 +754,7 @@ include 'includes/header.php';
                         <div class="stat-label">Comments</div>
                     </div>
                 </div>
-                
+
                 <div class="stat-card">
                     <div class="stat-icon">
                         <i class="fas fa-history"></i>
@@ -741,7 +764,7 @@ include 'includes/header.php';
                         <div class="stat-label">Stories</div>
                     </div>
                 </div>
-                
+
                 <div class="stat-card">
                     <div class="stat-icon">
                         <i class="fas fa-flag"></i>
@@ -752,8 +775,57 @@ include 'includes/header.php';
                     </div>
                 </div>
             </div>
-            
+
         <?php elseif ($current_tab == 'users'): ?>
+
+<?php
+            // Determine if we are in "edit user" mode
+            $edit_user_id = isset($_GET['edit']) && is_numeric($_GET['edit']) ? (int)$_GET['edit'] : 0;
+
+            // Handle User Editing Submission
+            if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_user'])) {
+                $user_id = (int)$_POST['user_id'];
+                $username = sanitize($_POST['username']);
+                $email = sanitize($_POST['email']);
+                $about = sanitize($_POST['about']);
+
+                $errors = [];
+
+                // Validation
+                if (empty($username)) {
+                    $errors[] = 'Username is required.';
+                } elseif (strlen($username) < 3) {
+                    $errors[] = 'Username must be at least 3 characters.';
+                }
+
+                if (empty($email)) {
+                    $errors[] = 'Email is required.';
+                } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                    $errors[] = 'Invalid email format.';
+                }
+
+                // Check for duplicate username/email (excluding current user)
+                $stmt = $pdo->prepare("SELECT id FROM users WHERE (username = ? OR email = ?) AND id != ?");
+                $stmt->execute([$username, $email, $user_id]);
+                if ($stmt->fetch()) {
+                    $errors[] = 'Username or email already exists.';
+                }
+
+                if (empty($errors)) {
+                    // Update user in database
+                    $stmt = $pdo->prepare("UPDATE users SET username = ?, email = ?, about = ? WHERE id = ?");
+                    $stmt->execute([$username, $email, $about, $user_id]);
+                    $_SESSION['success'] = 'User information updated successfully.';
+                } else {
+                    $_SESSION['errors'] = $errors; // Store errors in session for display
+                }
+
+                $edit_user_id = 0; // Reset edit mode
+                header('Location: admin.php?tab=users&edit=' . $user_id);
+                
+            }
+            ?>
+
             <div class="admin-header">
                 <h1><i class="fas fa-users"></i> User management</h1>
                 <div class="admin-actions">
@@ -762,66 +834,124 @@ include 'includes/header.php';
                     </button>
                 </div>
             </div>
-            
+
+<?php if ($edit_user_id > 0): ?>
+  <?php
+                // Fetch user data
+                $user = getUser($edit_user_id);
+
+                if (!$user) {
+                    $_SESSION['error'] = "User not found.";
+                    header("Location: admin.php?tab=users");
+                    exit;
+                }
+                ?>
+                <div class="admin-edit-user">
+                    <h1>Edit User: <?= htmlspecialchars($user['username']) ?></h1>
+
+                    <?php
+                    // Display errors from the session, if any
+                    if (isset($_SESSION['errors'])) {
+                        echo '<div class="alert alert-danger">';
+                        echo '<ul>';
+                        foreach ($_SESSION['errors'] as $error) {
+                            echo '<li>' . htmlspecialchars($error) . '</li>';
+                        }
+                        echo '</ul>';
+                        echo '</div>';
+                        unset($_SESSION['errors']); // Clear the errors
+                    }
+
+                    // Display success message from the session, if any
+                    if (isset($_SESSION['success'])) {
+                        echo '<div class="alert alert-success">' . htmlspecialchars($_SESSION['success']) . '</div>';
+                        unset($_SESSION['success']); // Clear the success message
+                    }
+                    ?>
+
+                    <form action="admin.php?tab=users" method="POST">
+                        <input type="hidden" name="user_id" value="<?= $edit_user_id ?>">
+                        <input type="hidden" name="update_user" value="1"> <!-- Flag to identify the update form -->
+                        <div class="form-group">
+                            <label for="username">Username</label>
+                            <input type="text" id="username" name="username" value="<?= htmlspecialchars($user['username']) ?>" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="email">Email</label>
+                            <input type="email" id="email" name="email" value="<?= htmlspecialchars($user['email']) ?>" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="about">About</label>
+                            <textarea id="about" name="about"><?= htmlspecialchars($user['about']) ?></textarea>
+                        </div>
+
+                        <input type="submit" value="Update User" class="btn btn-primary">
+                    </form>
+                </div>
+
+            <?php else: ?>
+
             <div class="admin-table-container">
                 <div class="table-responsive">
                     <table class="admin-table">
                         <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>User</th>
-                                <th>Email</th>
-                                <th>Role</th>
-                                <th>Registration date</th>
-                                <th>Actions</th>
-                            </tr>
+                        <tr>
+                            <th>ID</th>
+                            <th>User</th>
+                            <th>Email</th>
+                            <th>Role</th>
+                            <th>Registration date</th>
+                            <th>Actions</th>
+                        </tr>
                         </thead>
                         <tbody>
-                            <?php foreach ($users as $user): ?>
-                                <tr>
-                                    <td><?= $user['id'] ?></td>
-                                    <td>
-                                        <a href="profile.php?id=<?= $user['id'] ?>" class="user-link">
-                                            <img src="<?= SITE_URL ?>/uploads/<?= $user['avatar'] ?>" 
-                                                 alt="Аватар" class="user-avatar">
-                                            <span><?= htmlspecialchars($user['username']) ?></span>
-                                        </a>
-                                    </td>
-                                    <td><?= htmlspecialchars($user['email']) ?></td>
-                                    <td>
-                                        <form action="admin_update_user.php" method="POST" class="role-form">
-                                            <input type="hidden" name="user_id" value="<?= $user['id'] ?>">
-                                            <select name="role" onchange="this.form.submit()" 
-                                                    <?= $user['id'] == $_SESSION['user_id'] ? 'disabled' : '' ?>
-                                                    class="role-select">
-                                                <option value="user" <?= $user['role'] == 'user' ? 'selected' : '' ?>>User</option>
-                                                <option value="moderator" <?= $user['role'] == 'moderator' ? 'selected' : '' ?>>Moderator</option>
-                                                <option value="admin" <?= $user['role'] == 'admin' ? 'selected' : '' ?>>Administrator</option>
-                                            </select>
-                                        </form>
-                                    </td>
-                                    <td><?= date('d.m.Y H:i', strtotime($user['created_at'])) ?></td>
-                                    <td>
-                                        <div class="action-buttons">
-                                            <?php if ($user['id'] != $_SESSION['user_id']): ?>
-                                                <a href="admin_ban_user.php?id=<?= $user['id'] ?>" 
-                                                   class="btn btn-danger btn-small"
-                                                   onclick="return confirm('Are you sure you want to ban this user?')">
-                                                    <i class="fas fa-ban"></i>
-                                                </a>
-                                            <?php endif; ?>
-                                            <a href="admin_edit_user.php?id=<?= $user['id'] ?>" 
-                                               class="btn btn-edit btn-small">
-                                                <i class="fas fa-edit"></i>
+                        <?php foreach ($users as $user): ?>
+                            <tr>
+                                <td><?= $user['id'] ?></td>
+                                <td>
+                                    <a href="profile.php?id=<?= $user['id'] ?>" class="user-link">
+                                        <img src="<?= SITE_URL ?>/uploads/<?= $user['avatar'] ?>" 
+                                                 alt="Avatar" class="user-avatar">
+                                        <span><?= htmlspecialchars($user['username']) ?></span>
+                                    </a>
+                                </td>
+                                <td><?= htmlspecialchars($user['email']) ?></td>
+                                <td>
+                                    <form action="admin_update_user.php" method="POST" class="role-form">
+                                        <input type="hidden" name="user_id" value="<?= $user['id'] ?>">
+                                        <select name="role" onchange="this.form.submit()"
+                                                <?= $user['id'] == $_SESSION['user_id'] ? 'disabled' : '' ?>
+                                                class="role-select">
+                                            <option value="user" <?= $user['role'] == 'user' ? 'selected' : '' ?>>User</option>
+                                            <option value="moderator" <?= $user['role'] == 'moderator' ? 'selected' : '' ?>>Moderator</option>
+                                            <option value="admin" <?= $user['role'] == 'admin' ? 'selected' : '' ?>>Administrator</option>
+                                        </select>
+                                    </form>
+                                </td>
+                                <td><?= date('d.m.Y H:i', strtotime($user['created_at'])) ?></td>
+                                <td>
+                                    <div class="action-buttons">
+                                        <?php if ($user['id'] != $_SESSION['user_id']): ?>
+                                            <a href="admin_ban_user.php?id=<?= $user['id'] ?>"
+                                               class="btn btn-danger btn-small"
+                                               onclick="return confirm('Are you sure you want to ban this user?')">
+                                                <i class="fas fa-ban"></i>
                                             </a>
-                                        </div>
-                                    </td>
-                                </tr>
-                            <?php endforeach; ?>
+                                        <?php endif; ?>
+                                        <a href="admin.php?tab=users&edit=<?= $user['id'] ?>"
+                                       class="btn btn-edit btn-small">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
                         </tbody>
                     </table>
                 </div>
-                
+
                 <?php if ($total_pages > 1): ?>
                     <div class="pagination">
                         <?php if ($page > 1): ?>
@@ -829,40 +959,48 @@ include 'includes/header.php';
                                 <i class="fas fa-chevron-left"></i>
                             </a>
                         <?php endif; ?>
-                        
+
                         <?php for ($i = 1; $i <= $total_pages; $i++): ?>
-                            <a href="admin.php?tab=users&page=<?= $i ?>" 
+                            <a href="admin.php?tab=users&page=<?= $i ?>"
                                class="page-link <?= $i == $page ? 'active' : '' ?>">
                                 <?= $i ?>
                             </a>
                         <?php endfor; ?>
-                        
+
                         <?php if ($page < $total_pages): ?>
                             <a href="admin.php?tab=users&page=<?= $page + 1 ?>" class="page-link">
                                 <i class="fas fa-chevron-right"></i>
                             </a>
                         <?php endif; ?>
-                        </div>
+                    </div>
                 <?php endif; ?>
             </div>
-            
+            <?php endif; ?>
+
         <?php elseif ($current_tab == 'posts'): ?>
             <div class="admin-header">
                 <h1><i class="fas fa-newspaper"></i> Posts management</h1>
                 <div class="admin-actions">
                     <div class="search-box">
-                        <input type="text" placeholder="Поиск постов...">
+                        <input type="text" placeholder="Search posts...">
                         <button class="btn btn-search">
                             <i class="fas fa-search"></i>
                         </button>
                     </div>
                 </div>
             </div>
-            
-            <div class="admin-table-container">
-                <div class="table-responsive">
-                    <table class="admin-table">
-                        <thead>
+
+            <?php if ($edit_post_id > 0): ?>
+    <?php
+        $_GET['action'] = 'edit';
+        $_GET['id'] = $edit_post_id;
+        include 'admin_post_form.php';
+    ?>
+<?php else: ?>
+                <div class="admin-table-container">
+                    <div class="table-responsive">
+                        <table class="admin-table">
+                            <thead>
                             <tr>
                                 <th>ID</th>
                                 <th>Title</th>
@@ -871,8 +1009,8 @@ include 'includes/header.php';
                                 <th>Rating</th>
                                 <th>Actions</th>
                             </tr>
-                        </thead>
-                        <tbody>
+                            </thead>
+                            <tbody>
                             <?php foreach ($posts as $post): ?>
                                 <tr>
                                     <td><?= $post['id'] ?></td>
@@ -891,12 +1029,12 @@ include 'includes/header.php';
                                     <td><?= $post['upvotes'] - $post['downvotes'] ?></td>
                                     <td>
                                         <div class="action-buttons">
-                                            <a href="admin_delete_post.php?id=<?= $post['id'] ?>" 
+                                            <a href="admin_delete_post.php?id=<?= $post['id'] ?>"
                                                class="btn btn-danger btn-small"
                                                onclick="return confirm('Are you sure you want to delete this post?')">
                                                 <i class="fas fa-trash"></i>
                                             </a>
-                                            <a href="admin_edit_post.php?id=<?= $post['id'] ?>" 
+                                            <a href="admin_edit_post.php?id=<?= $post['id'] ?>"
                                                class="btn btn-edit btn-small">
                                                 <i class="fas fa-edit"></i>
                                             </a>
@@ -904,34 +1042,36 @@ include 'includes/header.php';
                                     </td>
                                 </tr>
                             <?php endforeach; ?>
-                        </tbody>
-                    </table>
-                </div>
-                
-                <?php if ($total_pages > 1): ?>
-                    <div class="pagination">
-                        <?php if ($page > 1): ?>
-                            <a href="admin.php?tab=posts&page=<?= $page - 1 ?>" class="page-link">
-                                <i class="fas fa-chevron-left"></i>
-                            </a>
-                        <?php endif; ?>
-                        
-                        <?php for ($i = 1; $i <= $total_pages; $i++): ?>
-                            <a href="admin.php?tab=posts&page=<?= $i ?>" 
-                               class="page-link <?= $i == $page ? 'active' : '' ?>">
-                                <?= $i ?>
-                            </a>
-                        <?php endfor; ?>
-                        
-                        <?php if ($page < $total_pages): ?>
-                            <a href="admin.php?tab=posts&page=<?= $page + 1 ?>" class="page-link">
-                                <i class="fas fa-chevron-right"></i>
-                            </a>
-                        <?php endif; ?>
+                            </tbody>
+                        </table>
                     </div>
-                <?php endif; ?>
-            </div>
-            
+
+                    <?php if ($total_pages > 1): ?>
+                        <div class="pagination">
+                            <?php if ($page > 1): ?>
+                                <a href="admin.php?tab=posts&page=<?= $page - 1 ?>" class="page-link">
+                                    <i class="fas fa-chevron-left"></i>
+                                </a>
+                            <?php endif; ?>
+
+                            <?php for ($i = 1; $i <= $total_pages; $i++): ?>
+                                <a href="admin.php?tab=posts&page=<?= $i ?>"
+                                   class="page-link <?= $i == $page ? 'active' : '' ?>">
+                                    <?= $i ?>
+                                </a>
+                            <?php endfor; ?>
+
+                            <?php if ($page < $total_pages): ?>
+                                <a href="admin.php?tab=posts&page=<?= $page + 1 ?>" class="page-link">
+                                    <i class="fas fa-chevron-right"></i>
+                                </a>
+                            <?php endif; ?>
+                        </div>
+                    <?php endif; ?>
+                </div>
+            <?php endif; ?> <!-- End of the  $edit_post_id  check -->
+
+
         <?php elseif ($current_tab == 'comments'): ?>
             <div class="admin-header">
                 <h1><i class="fas fa-comments"></i> Comments management</h1>
@@ -963,8 +1103,10 @@ include 'includes/header.php';
                                 <tr>
                                     <td><?= $comment['id'] ?></td>
                                     <td>
-                                        <?= htmlspecialchars(substr($comment['content'], 0, 50)) ?>
-                                        <?= strlen($comment['content']) > 50 ? '...' : '' ?>
+                                        <?php
+$truncated_content = substr($comment['content'], 0, 50); // Truncate the string
+?>
+<p><a href="post.php?id=<?= $comment['post_id'] ?>"><?= html_entity_decode(htmlspecialchars($truncated_content)) ?></a>
                                     </td>
                                     <td>
                                         <a href="profile.php?id=<?= $comment['user_id'] ?>" class="user-link">
@@ -1050,7 +1192,7 @@ include 'includes/header.php';
                                     <td><?= $story['id'] ?></td>
                                     <td>
                                         <?php if ($story['image']): ?>
-                                            <img src="<?= SITE_URL ?>/uploads/<?= $story['image'] ?>" 
+                                            <img src="" 
                                                  alt="История" class="story-preview">
                                         <?php endif; ?>
                                         <?= htmlspecialchars(substr($story['content'], 0, 50)) ?>

@@ -120,23 +120,6 @@ include 'includes/header.php';
         border-top: 1px solid #333;
     }
 
-    .delete-button {
-        background-color: rgba(244, 67, 54, 0.1);
-        color: #f44336;
-        border: none;
-        padding: 8px 15px;
-        border-radius: var(--border-radius);
-        cursor: pointer;
-        transition: var(--transition);
-        display: flex;
-        align-items: center;
-        gap: 5px;
-    }
-
-    .delete-button:hover {
-        background-color: rgba(244, 67, 54, 0.2);
-    }
-
     @media (max-width: 768px) {
         .story-container {
             margin: 10px;

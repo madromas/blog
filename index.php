@@ -1,6 +1,5 @@
 <?php
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
+
 require_once 'includes/config.php';
 require_once 'includes/functions.php';
 
@@ -17,6 +16,21 @@ $stmt = $pdo->query("
     LIMIT 10
 ");
 $stories = $stmt->fetchAll();
+
+//Fetch latest comments from the database
+$latestComments = getLatestComments();
+
+// Fetch all unique tags from the database
+$allTags = getAllTags();
+
+$stmt = $pdo->prepare("
+    SELECT c.*, u.username, u.avatar 
+    FROM comments c 
+    LEFT JOIN users u ON c.user_id = u.id 
+    WHERE c.post_id = ? 
+    ORDER BY c.created_at DESC
+");
+$comments = $stmt->fetchAll();
 
 $page_title = 'Home';
 include 'includes/header.php';
@@ -37,6 +51,14 @@ include 'includes/header.php';
         color: var(--text-secondary);
         font-weight: 500;
     }
+  
+
+    .new-comments-list li{
+        background-color: rgba(0, 0, 0, 0.2);
+        padding:10px!important;
+        margin-bottom: 5px;
+    border-radius: 10px;
+    }
 
     .stories-carousel {
         display: flex;
@@ -50,16 +72,7 @@ include 'includes/header.php';
         display: none;
     }
 
-    .story-item {
-        flex: 0 0 110px;
-        height: 190px;
-        border-radius: 10px;
-        overflow: hidden;
-        position: relative;
-        cursor: pointer;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-        transition: transform 0.2s ease;
-    }
+   
 
     .story-item:hover {
         transform: scale(1.03);
@@ -259,6 +272,10 @@ include 'includes/header.php';
         color: var(--text-secondary);
     }
 
+.new-comments-list .post-meta{
+    margin-bottom: 10px;
+}
+
     .post-meta i {
         margin-right: 5px;
         color: var(--accent-green);
@@ -305,9 +322,18 @@ include 'includes/header.php';
         color: var(--accent-green);
     }
 
-    .post-meta {
-        font-size: 0.8rem;
+.new-comments-list {
+        list-style: none;
     }
+
+    .new-comments-list li:last-child {
+        border-bottom: none;
+    }
+
+    .new-comments-list a:hover {
+        color: var(--accent-green);
+    }
+
 
     /* Tags */
     .tags-cloud {
@@ -414,7 +440,12 @@ include 'includes/header.php';
                             <a href="post.php?id=<?= $post['id'] ?>"><img src="<?= SITE_URL ?>/uploads/<?= $post['image'] ?>" alt="<?= htmlspecialchars($post['title']) ?>"></a>
                         </div>
                     <?php endif; ?>
-                    <div class="post-text"><?= nl2br(htmlspecialchars(substr($post['content'], 0, 300))) ?>...</div>
+                    <div class="post-text">
+                        <?php
+$truncated_content = substr($post['content'], 0, 300); // Truncate the string
+?>
+<p><?= html_entity_decode(htmlspecialchars($truncated_content)) ?>...</p>
+                    </div>
                     <div class="post-meta">
                         <span class="post-author"><a href="profile.php?id=<?= $post['user_id'] ?>"><i class="fas fa-user"></i> <?= htmlspecialchars($post['username']) ?></a></span>
                         <span class="post-date"><i class="far fa-clock"></i> <?= date('d.m.Y H:i', strtotime($post['created_at'])) ?></span>
@@ -429,6 +460,30 @@ include 'includes/header.php';
     </div>
     
     <div class="sidebar">
+
+<div class="sidebar-widget">
+    <h3><i class="fas fa-comments"></i> Latest Comments</h3>
+    <ul class="new-comments-list">
+        <?php if ($latestComments): ?>
+            <?php foreach ($latestComments as $comment): ?>
+                <li><div class="post-meta"><span class="post-author">
+                    <img src="<?= SITE_URL ?>/uploads/<?= $comment['avatar'] ?? 'default.png' ?>" alt="Avatar" class="avatar">
+                    <a href="profile.php?id=<?= $comment['user_id'] ?>">
+         <?= htmlspecialchars($comment['username']) ?>
+    </a></span></div>
+                    <?php
+$truncated_content = substr($comment['content'], 0, 50); // Truncate the string
+?>
+<p><a href="post.php?id=<?= $comment['post_id'] ?>"><?= html_entity_decode(htmlspecialchars($truncated_content)) ?></a></p>
+                <p style="font-size:.9rem;text-align: right;"><i class="fa-solid fa-arrow-turn-up" style="transform: rotate(90deg); font-size:.8em"></i> <a href="post.php?id=<?= $comment['post_id'] ?>" target="_blank"><?= htmlspecialchars($comment['post_title']) ?></a></p>
+                </li>
+            <?php endforeach; ?>
+        <?php else: ?>
+            <li>No comments yet.</li>
+        <?php endif; ?>
+    </ul>
+</div>
+        
         <div class="sidebar-widget">
             <h3><i class="far fa-newspaper"></i> New posts</h3>
             <ul class="new-posts-list">
@@ -441,17 +496,16 @@ include 'includes/header.php';
             </ul>
         </div>
         
-        <div class="sidebar-widget">
-            <h3><i class="fas fa-tags"></i> Tags</h3>
-            <div class="tags-cloud">
-                <?php
-                $tags = ['technology', 'sport', 'movies', 'music', 'games'];
-                foreach ($tags as $tag) {
-                    echo '<a href="search.php?tag=' . urlencode($tag) . '" class="tag">' . htmlspecialchars($tag) . '</a>';
-                }
-                ?>
-            </div>
-        </div>
+      <div class="sidebar-widget">
+    <h3><i class="fas fa-tags"></i> Tags</h3>
+    <div class="tags-cloud">
+        <?php
+        foreach ($allTags as $tag) {
+            echo '<a href="search.php?tag=' . urlencode($tag) . '" class="tag">' . htmlspecialchars($tag) . '</a>';
+        }
+        ?>
+    </div>
+</div>
 
         <!-- Баннер -->
         <div class="sidebar-widget">

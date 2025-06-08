@@ -263,7 +263,10 @@ include 'includes/header.php';
                             <span class="post-date"><?= date('d.m.Y H:i', strtotime($post['created_at'])) ?></span>
                         </div>
                         <div class="post-excerpt">
-                            <?= nl2br(htmlspecialchars(substr($post['content'], 0, 200))) ?>...
+                            <?php
+$truncated_content = substr($post['content'], 0, 200); // Truncate the string
+?>
+<p><?= html_entity_decode(htmlspecialchars($truncated_content)) ?>...</p>
                         </div>
                         <div class="post-tags">
                             <?php

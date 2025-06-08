@@ -20,22 +20,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_profile'])) {
     
     // Валидация
     if (empty($username)) {
-        $errors[] = 'Имя пользователя обязательно';
+        $errors[] = 'User name is required';
     } elseif (strlen($username) < 3) {
-        $errors[] = 'Имя пользователя должно быть не менее 3 символов';
+        $errors[] = 'The user name must be at least 3 characters long.';
     }
     
     if (empty($email)) {
-        $errors[] = 'Email обязателен';
+        $errors[] = 'Email is required';
     } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-        $errors[] = 'Некорректный email';
+        $errors[] = 'Incorrect email address';
     }
     
     // Проверка уникальности username и email
     $stmt = $pdo->prepare("SELECT id FROM users WHERE (username = ? OR email = ?) AND id != ?");
     $stmt->execute([$username, $email, $user_id]);
     if ($stmt->fetch()) {
-        $errors[] = 'Пользователь с таким именем или email уже существует';
+        $errors[] = 'A user with that name or email already exists';
     }
     
     if (empty($errors)) {
@@ -43,7 +43,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_profile'])) {
         $stmt->execute([$username, $email, $about, $user_id]);
         
         $_SESSION['username'] = $username;
-        $success = 'Профиль успешно обновлен';
+        $success = 'Profile has been successfully updated';
         $user = getUser($user_id); // Обновляем данные пользователя
     }
 }
@@ -56,23 +56,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['change_password'])) {
     
     // Проверка текущего пароля
     if (!password_verify($current_password, $user['password'])) {
-        $errors[] = 'Текущий пароль неверен';
+        $errors[] = 'The current password is incorrect';
     }
     
     if (empty($new_password)) {
-        $errors[] = 'Новый пароль обязателен';
+        $errors[] = 'A new password is required';
     } elseif (strlen($new_password) < 6) {
-        $errors[] = 'Новый пароль должен быть не менее 6 символов';
+        $errors[] = 'The new password must be at least 6 characters long';
     }
     
     if ($new_password !== $confirm_password) {
-        $errors[] = 'Пароли не совпадают';
+        $errors[] = 'Passwords do not match';
     }
     
     if (empty($errors)) {
         $hashed_password = password_hash($new_password, PASSWORD_DEFAULT);
         $pdo->prepare("UPDATE users SET password = ? WHERE id = ?")->execute([$hashed_password, $user_id]);
-        $success = 'Пароль успешно изменен';
+        $success = 'The password has been successfully changed';
     }
 }
 
@@ -87,10 +87,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['upload_avatar']) && i
         }
         
         $pdo->prepare("UPDATE users SET avatar = ? WHERE id = ?")->execute([$avatar, $user_id]);
-        $success = 'Аватар успешно обновлен';
+        $success = 'Avatar has been successfully updated';
         $user = getUser($user_id); // Обновляем данные пользователя
     } else {
-        $errors[] = 'Не удалось загрузить аватар. Проверьте формат и размер файла';
+        $errors[] = 'The avatar could not be uploaded. Check the file format and size';
     }
 }
 
@@ -101,11 +101,38 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_avatar'])) {
     }
     
     $pdo->prepare("UPDATE users SET avatar = 'default.png' WHERE id = ?")->execute([$user_id]);
-    $success = 'Аватар удален';
+    $success = 'The avatar has been deleted';
     $user = getUser($user_id); // Обновляем данные пользователя
 }
 
-$page_title = 'Настройки профиля';
+// Обработка настроек приватности
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_privacy'])) {
+    $show_email = isset($_POST['show_email']) ? 1 : 0;
+    $allow_private_messages = isset($_POST['allow_private_messages']) ? 1 : 0;
+    $show_online_status = isset($_POST['show_online_status']) ? 1 : 0;
+    $profile_visibility = $_POST['profile_visibility'];
+
+    // Валидация (можно добавить дополнительную валидацию для profile_visibility)
+    if (!in_array($profile_visibility, ['public', 'registered', 'private'])) {
+        $errors[] = 'Incorrect profile visibility value';
+    }
+
+    if (empty($errors)) {
+        $stmt = $pdo->prepare("
+            UPDATE users 
+            SET show_email = ?, 
+                allow_private_messages = ?, 
+                show_online_status = ?, 
+                profile_visibility = ? 
+            WHERE id = ?
+        ");
+        $stmt->execute([$show_email, $allow_private_messages, $show_online_status, $profile_visibility, $user_id]);
+        $success = 'Privacy settings have been successfully updated';
+        $user = getUser($user_id); // Обновляем данные пользователя
+    }
+}
+
+$page_title = 'Profile settings';
 include 'includes/header.php';
 ?>
 
@@ -307,7 +334,7 @@ include 'includes/header.php';
 </style>
 
 <div class="settings-page">
-    <h1>Настройки профиля</h1>
+    <h1>Profile settings</h1>
     
     <?php if ($success): ?>
         <div class="alert alert-success"><?= $success ?></div>
@@ -325,17 +352,17 @@ include 'includes/header.php';
     
     <div class="settings-tabs">
         <div class="tab-header">
-            <button class="tab-link active" onclick="openTab(event, 'profile')">Профиль</button>
-            <button class="tab-link" onclick="openTab(event, 'password')">Пароль</button>
-            <button class="tab-link" onclick="openTab(event, 'avatar')">Аватар</button>
-            <button class="tab-link" onclick="openTab(event, 'privacy')">Приватность</button>
+            <button class="tab-link active" onclick="openTab(event, 'profile')">Profile</button>
+            <button class="tab-link" onclick="openTab(event, 'password')">Password</button>
+            <button class="tab-link" onclick="openTab(event, 'avatar')">Avatar</button>
+            <button class="tab-link" onclick="openTab(event, 'privacy')">Privacy</button>
         </div>
         
         <!-- Вкладка профиля -->
         <div id="profile" class="tab-content active">
             <form action="settings.php" method="POST">
                 <div class="form-group">
-                    <label for="username">Имя пользователя</label>
+                    <label for="username">User name</label>
                     <input type="text" id="username" name="username" value="<?= htmlspecialchars($user['username']) ?>" required>
                 </div>
                 
@@ -345,11 +372,11 @@ include 'includes/header.php';
                 </div>
                 
                 <div class="form-group">
-                    <label for="about">О себе</label>
+                    <label for="about">About me</label>
                     <textarea id="about" name="about" rows="4"><?= htmlspecialchars($user['about'] ?? '') ?></textarea>
                 </div>
                 
-                <input type="submit" name="update_profile" value="Сохранить изменения" class="btn btn-primary">
+                <input type="submit" name="update_profile" value="Save changes" class="btn btn-primary">
             </form>
         </div>
         
@@ -357,21 +384,21 @@ include 'includes/header.php';
         <div id="password" class="tab-content">
             <form action="settings.php" method="POST">
                 <div class="form-group">
-                    <label for="current_password">Текущий пароль</label>
+                    <label for="current_password">Current password</label>
                     <input type="password" id="current_password" name="current_password" required>
                 </div>
                 
                 <div class="form-group">
-                    <label for="new_password">Новый пароль</label>
+                    <label for="new_password">New password</label>
                     <input type="password" id="new_password" name="new_password" required>
                 </div>
                 
                 <div class="form-group">
-                    <label for="confirm_password">Подтвердите новый пароль</label>
+                    <label for="confirm_password">Confirm the new password</label>
                     <input type="password" id="confirm_password" name="confirm_password" required>
                 </div>
                 
-                <input type="submit" name="change_password" value="Изменить пароль" class="btn btn-primary">
+                <input type="submit" name="change_password" value="Change password" class="btn btn-primary">
             </form>
         </div>
         
@@ -379,23 +406,23 @@ include 'includes/header.php';
         <div id="avatar" class="tab-content">
             <div class="avatar-settings">
                 <div class="current-avatar">
-                    <h3>Текущий аватар</h3>
+                    <h3>Current avatar</h3>
                     <img src="<?= SITE_URL ?>/uploads/<?= $user['avatar'] ?>" alt="Аватар" class="avatar-large">
                     
                     <form action="settings.php" method="POST" style="margin-top: 20px;">
-                        <button type="submit" name="delete_avatar" class="btn btn-danger">Удалить аватар</button>
+                        <button type="submit" name="delete_avatar" class="btn btn-danger">Delete avatar</button>
                     </form>
                 </div>
                 
                 <div class="upload-avatar">
-                    <h3>Загрузить новый аватар</h3>
+                    <h3>Uload new avatar</h3>
                     <form action="settings.php" method="POST" enctype="multipart/form-data">
                         <div class="form-group">
-                            <label for="avatar">Выберите изображение (JPG, PNG, max 5MB)</label>
+                            <label for="avatar">Select an image (JPG, PNG, max 5MB)</label>
                             <input type="file" id="avatar" name="avatar" accept="image/*" required>
                         </div>
                         
-                        <input type="submit" name="upload_avatar" value="Загрузить" class="btn btn-primary">
+                        <input type="submit" name="upload_avatar" value="Upload" class="btn btn-primary">
                     </form>
                 </div>
             </div>
@@ -406,35 +433,35 @@ include 'includes/header.php';
             <form action="settings.php" method="POST">
                 <div class="form-group">
                     <label class="checkbox-label">
-                        <input type="checkbox" name="show_email" <?= $user['show_email'] ? 'checked' : '' ?>> 
-                        Показывать email в профиле
+                        <input type="checkbox" name="show_email" <?= ($user['show_email'] ?? 0) ? 'checked' : '' ?>> 
+                        Show email in profile
                     </label>
                 </div>
                 
                 <div class="form-group">
                     <label class="checkbox-label">
-                        <input type="checkbox" name="allow_private_messages" <?= $user['allow_private_messages'] ? 'checked' : '' ?>> 
-                        Разрешить личные сообщения
+                        <input type="checkbox" name="allow_private_messages" <?= ($user['allow_private_messages'] ?? 0) ? 'checked' : '' ?>> 
+                        Allow private messages
                     </label>
                 </div>
                 
                 <div class="form-group">
                     <label class="checkbox-label">
-                        <input type="checkbox" name="show_online_status" <?= $user['show_online_status'] ? 'checked' : '' ?>> 
-                        Показывать статус онлайн
+                        <input type="checkbox" name="show_online_status" <?= ($user['show_online_status'] ?? 0) ? 'checked' : '' ?>> 
+                        Show online status
                     </label>
                 </div>
                 
                 <div class="form-group">
-                    <label for="profile_visibility">Видимость профиля</label>
+                    <label for="profile_visibility">Profile visibility</label>
                     <select id="profile_visibility" name="profile_visibility">
-                        <option value="public" <?= $user['profile_visibility'] == 'public' ? 'selected' : '' ?>>Публичный</option>
-                        <option value="registered" <?= $user['profile_visibility'] == 'registered' ? 'selected' : '' ?>>Только зарегистрированные</option>
-                        <option value="private" <?= $user['profile_visibility'] == 'private' ? 'selected' : '' ?>>Приватный</option>
+                        <option value="public" <?= (($user['profile_visibility'] ?? 'public') == 'public') ? 'selected' : '' ?>>Public</option>
+                        <option value="registered" <?= (($user['profile_visibility'] ?? 'public') == 'registered') ? 'selected' : '' ?>>Registered users only</option>
+                        <option value="private" <?= (($user['profile_visibility'] ?? 'public') == 'private') ? 'selected' : '' ?>>Private</option>
                     </select>
                 </div>
                 
-                <input type="submit" name="update_privacy" value="Сохранить настройки" class="btn btn-primary">
+                <input type="submit" name="update_privacy" value="Save changes" class="btn btn-primary">
             </form>
         </div>
     </div>

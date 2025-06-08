@@ -415,7 +415,7 @@ include 'includes/header.php';
                 </div>
                 
                 <div class="upload-avatar">
-                    <h3>Uload new avatar</h3>
+                    <h3>Upload new avatar</h3>
                     <form action="settings.php" method="POST" enctype="multipart/form-data">
                         <div class="form-group">
                             <label for="avatar">Select an image (JPG, PNG, max 5MB)</label>

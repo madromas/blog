@@ -504,6 +504,327 @@ function getCompletedAchievements($user_id) {
 }
 
 /**
+ * Deletes a post from the database.
+ *
+ * @param int $post_id The ID of the post to delete.
+ * @return bool True on success, false on failure.
+ */
+function deletePost(int $post_id): bool {
+    global $pdo; // Access the PDO database connection
+
+    $sql = "DELETE FROM posts WHERE id = ?";
+    $stmt = $pdo->prepare($sql);
+
+    if ($stmt === false) {
+        error_log("Error preparing statement in deletePost: " . print_r($pdo->errorInfo(), true));
+        return false;
+    }
+
+    $result = $stmt->execute([$post_id]); // Use an array for parameters
+
+    if ($result) {
+        $stmt->closeCursor();  // Use closeCursor instead of close
+        return true;
+    } else {
+        error_log("Error executing statement in deletePost: " . print_r($stmt->errorInfo(), true));
+        $stmt->closeCursor();  // Use closeCursor instead of close
+        return false;
+    }
+}
+
+/**
+ * Retrieves a post from the database by its ID.
+ *
+ * @param int $post_id The ID of the post to retrieve.
+ * @return array|null The post data as an associative array, or null if not found.
+ */
+function getPostById(int $post_id): ?array {
+    global $pdo;
+
+    $sql = "SELECT * FROM posts WHERE id = ?";
+    $stmt = $pdo->prepare($sql);
+
+    if ($stmt === false) {
+        error_log("Error preparing statement in getPostById: " . print_r($pdo->errorInfo(), true));
+        return null;
+    }
+
+    $stmt->execute([$post_id]);  // Use an array for parameters
+    $post = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    $stmt->closeCursor(); // Use closeCursor instead of close
+
+    return $post ?: null;  // Use the null coalescing operator to return null if $post is falsey
+}
+
+/**
+ * Updates a post in the database.
+ *
+ * @param int $post_id The ID of the post to update.
+ * @param string $title The new title of the post.
+ * @param string $content The new content of the post.
+ * @param string $image The new image URL of the post.
+ * @param int $category_id The new category ID of the post.
+ * @return bool True on success, false on failure.
+ */
+function updatePost(int $post_id, string $title, string $content, string $image, string $tags): bool {
+    global $pdo;
+
+    $sql = "UPDATE posts SET title = ?, content = ?, image = ?, tags = ? WHERE id = ?";  // Remove category_id from the SQL
+    $stmt = $pdo->prepare($sql);
+
+    if ($stmt === false) {
+        error_log("Error preparing statement in updatePost: " . print_r($pdo->errorInfo(), true));
+        return false;
+    }
+
+    $result = $stmt->execute([$title, $content, $image, $tags, $post_id]); //Remove category_id
+
+    if ($result) {
+        $stmt->closeCursor();
+        return true;
+    } else {
+        error_log("Error executing statement in updatePost: " . print_r($stmt->errorInfo(), true));
+        $stmt->closeCursor();
+        return false;
+    }
+}
+
+function createPost(string $title, string $content, string $image, string $tags): bool {
+    global $pdo;
+
+    $sql = "INSERT INTO posts (title, content, image, tags) VALUES (?, ?, ?, ?)";  // Remove category_id from the SQL
+    $stmt = $pdo->prepare($sql);
+
+    if ($stmt === false) {
+        error_log("Error preparing statement in createPost: " . print_r($pdo->errorInfo(), true));
+        return false;
+    }
+
+    $result = $stmt->execute([$title, $content, $image, $tags]);  //Remove category_id
+
+    if ($result) {
+        $stmt->closeCursor();
+        return true;
+    } else {
+        error_log("Error executing statement in createPost: " . print_r($stmt->errorInfo(), true));
+        $stmt->closeCursor();
+        return false;
+    }
+}
+
+function deleteComment(int $comment_id): bool {
+    global $pdo;
+
+    $sql = "DELETE FROM comments WHERE id = ?";
+    $stmt = $pdo->prepare($sql);
+
+    if ($stmt === false) {
+        error_log("Error preparing statement in deleteComment: " . print_r($pdo->errorInfo(), true));
+        return false;
+    }
+
+    $result = $stmt->execute([$comment_id]);
+
+    if ($result) {
+        $stmt->closeCursor();
+        return true;
+    } else {
+        error_log("Error executing statement in deleteComment: " . print_r($stmt->errorInfo(), true));
+        $stmt->closeCursor();
+        return false;
+    }
+}
+
+function getCommentById(int $comment_id): array|false {
+    global $pdo;
+
+    $sql = "SELECT * FROM comments WHERE id = ?";
+    $stmt = $pdo->prepare($sql);
+
+    if ($stmt === false) {
+        error_log("Error preparing statement in getCommentById: " . print_r($pdo->errorInfo(), true));
+        return false;
+    }
+
+    $stmt->execute([$comment_id]);
+    $comment = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    $stmt->closeCursor();
+    return $comment ?: false;
+}
+
+function getAllTags(): array
+{
+    global $pdo;
+
+    $sql = "SELECT DISTINCT tags FROM posts WHERE tags IS NOT NULL AND tags != ''";
+    $stmt = $pdo->prepare($sql);
+
+    if ($stmt === false) {
+        error_log("Error preparing statement: " . print_r($pdo->errorInfo(), true));
+        return [];
+    }
+
+    $stmt->execute();
+    $results = $stmt->fetchAll(PDO::FETCH_COLUMN);
+    $tags = [];
+    foreach ($results as $result) {
+        $tagArray = explode(',', $result);
+        foreach ($tagArray as $tag) {
+            $tag = trim($tag);
+            if (!empty($tag)) {
+                $tags[] = $tag;
+            }
+        }
+    }
+
+    // Remove duplicate tags
+    $tags = array_unique($tags);
+
+    // Sort the tags alphabetically
+    sort($tags);
+
+    $stmt->closeCursor();
+    return $tags;
+}
+
+function getLatestComments(int $limit = 10): array {
+    global $pdo;
+
+    $sql = "
+        SELECT 
+            comments.*,
+            users.username,
+            users.avatar,
+            posts.title AS post_title,
+            posts.id AS post_id
+        FROM 
+            comments
+        JOIN 
+            users ON comments.user_id = users.id
+        JOIN
+            posts ON comments.post_id = posts.id
+        ORDER BY 
+            comments.created_at DESC
+        LIMIT ?
+    ";
+
+    $stmt = $pdo->prepare($sql);
+
+    if ($stmt === false) {
+        error_log("Error preparing statement: " . print_r($pdo->errorInfo(), true));
+        return [];
+    }
+
+    $stmt->bindValue(1, $limit, PDO::PARAM_INT);  // Use bindValue for LIMIT
+    $stmt->execute();
+    $latestComments = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    $stmt->closeCursor();
+    return $latestComments;
+}
+
+function getUserProfile(int $user_id, ?int $viewer_id = null): ?array
+{
+    global $pdo;
+
+    $sql = "
+        SELECT 
+            *
+        FROM 
+            users
+        WHERE 
+            id = ?
+    ";
+
+    $stmt = $pdo->prepare($sql);
+
+    if ($stmt === false) {
+        error_log("Error preparing statement: " . print_r($pdo->errorInfo(), true));
+        return null;
+    }
+
+    $stmt->execute([$user_id]);
+    $userProfile = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    $stmt->closeCursor();
+
+    if (!$userProfile) {
+        return null; // User not found
+    }
+
+    // Check Profile Visibility
+    if ($userProfile['profile_visibility'] === 'private') {
+        // Only the user themselves can view a private profile
+        if ($viewer_id !== $user_id) {
+            return null; // Not authorized
+        }
+    } elseif ($userProfile['profile_visibility'] === 'registered') {
+        // Only registered users can view the profile
+        if ($viewer_id === null) {
+            return null; // Not authorized - User is not logged in
+        }
+    }
+
+    return $userProfile;
+}
+
+function incrementPostViews(int $post_id): void
+{
+    global $pdo;
+
+    $sql = "
+        UPDATE 
+            posts
+        SET 
+            views = views + 1
+        WHERE 
+            id = ?
+    ";
+
+    $stmt = $pdo->prepare($sql);
+
+    if ($stmt === false) {
+        error_log("Error preparing statement: " . print_r($pdo->errorInfo(), true));
+        return;
+    }
+
+    $stmt->execute([$post_id]);
+    $stmt->closeCursor();
+}
+
+/**
+ * Deletes a post from the database.
+ *
+ * @param int $post_id The ID of the post to delete.
+ * @return bool True on success, false on failure.
+ */
+function deleteStory(int $story_id): bool {
+    global $pdo; // Access the PDO database connection
+
+    $sql = "DELETE FROM stories WHERE id = ?";
+    $stmt = $pdo->prepare($sql);
+
+    if ($stmt === false) {
+        error_log("Error preparing statement in deleteStory: " . print_r($pdo->errorInfo(), true));
+        return false;
+    }
+
+    $result = $stmt->execute([$story_id]); // Use an array for parameters
+
+    if ($result) {
+        $stmt->closeCursor();  // Use closeCursor instead of close
+        return true;
+    } else {
+        error_log("Error executing statement in deleteStory: " . print_r($stmt->errorInfo(), true));
+        $stmt->closeCursor();  // Use closeCursor instead of close
+        return false;
+    }
+}
+
+
+/**
  * Возвращает цвет для уровня
  */
 function getLevelColor($level_name) {

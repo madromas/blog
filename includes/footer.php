@@ -186,5 +186,16 @@
             });
         });
     </script>
+    <script>
+function showEditForm(userId) {
+    var form = document.getElementById('editForm' + userId);
+    form.style.display = "table-row";
+}
+
+function hideEditForm(userId) {
+    var form = document.getElementById('editForm' + userId);
+    form.style.display = "none";
+}
+</script>
 </body>
 </html>

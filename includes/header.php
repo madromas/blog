@@ -33,16 +33,6 @@
             flex-direction: column;
         }
 
-        a {
-            color: var(--text-primary);
-            text-decoration: none;
-            transition: var(--transition);
-        }
-
-        a:hover {
-            color: var(--accent-green);
-        }
-
         /* Header Styles */
         .mobile-header {
             display: none;

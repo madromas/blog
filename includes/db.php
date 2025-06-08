@@ -11,6 +11,6 @@ try {
         ]
     );
 } catch (PDOException $e) {
-    die("Ошибка подключения к базе данных: " . $e->getMessage());
+    die("Database connection error: " . $e->getMessage());
 }
 ?>

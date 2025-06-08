@@ -34,6 +34,40 @@ if (!$is_author && !$is_admin && !$is_moderator) {
     exit;
 }
 
+// **IMAGE DELETION LOGIC STARTS HERE**
+
+// Get the image filename from the database
+$stmt = $pdo->prepare("SELECT image FROM posts WHERE id = ?");
+$stmt->execute([$post_id]);
+$post_data = $stmt->fetch();
+
+if ($post_data) {
+    $image_filename = $post_data['image'];
+
+    // Delete the image file
+    if (!empty($image_filename)) {
+        $image_path = 'uploads/' . $image_filename; // Adjust the path if necessary
+
+        // Check if the file exists before attempting to delete it
+        if (file_exists($image_path)) {
+            // Try to delete the file and handle errors
+            if (unlink($image_path)) {
+                // File deleted successfully
+                $_SESSION['message'] = "Post and image deleted successfully.";
+                $_SESSION['message_type'] = 'success';
+            } else {
+                // Error deleting the file
+                $_SESSION['message'] = "Post deleted, but error deleting image.";
+                $_SESSION['message_type'] = 'warning';
+            }
+        } else {
+            // File doesn't exist
+            $_SESSION['message'] = "Post deleted, but image not found.";
+            $_SESSION['message_type'] = 'warning';
+        }
+    }
+}
+
 // Delete the post from the database
 if (deletePost($post_id)) {
     // Set a success message

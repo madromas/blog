@@ -325,10 +325,20 @@ include 'includes/header.php';
     <h2><i class="fas fa-comments"></i> Comments (<?= count($comments) ?>)</h2>
     
     <?php if (isLoggedIn()): ?>
-        <form action="add_comment.php" method="POST" class="comment-form">
+        <form action="add_comment.php" method="POST" enctype="multipart/form-data" class="comment-form">
             <input type="hidden" name="post_id" value="<?= $post['id'] ?>">
             <div class="form-group">
                 <textarea name="content" placeholder="Write your comment..." required></textarea>
+             
+<div class="form-group">
+                <label for="comment_image" class="file-upload-label">
+                    <i class="fas fa-image"></i>
+                    <span id="file-upload-text"></span>
+                    <input type="file" id="comment_image" name="comment_image" accept="image/*" class="file-upload-input">
+                </label>
+                <div id="image-preview" class="image-preview"></div>
+            </div>
+  
             </div>
             <button type="submit" class="btn btn-primary">
                 <i class="fas fa-paper-plane"></i> Submit
@@ -383,9 +393,12 @@ include 'includes/header.php';
                         <?php endif; ?>
                     </div>
 
-                    <div class="comment-content">
-                        <?= nl2br(html_entity_decode(htmlspecialchars($comment['content']))) ?>
-                    </div>
+                   <div class="comment-content">
+    <p><?= nl2br(html_entity_decode(htmlspecialchars($comment['content']))) ?></p>
+    <?php if (!empty($comment['image'])): ?>
+        <p><a data-fancybox data-caption="Comment Image" href="uploads/<?= htmlspecialchars($comment['image']) ?>"><img src="uploads/<?= htmlspecialchars($comment['image']) ?>" alt="Comment Image" class="comment-image"></a></p>
+    <?php endif; ?>
+</div>
                     <div class="comment-meta">
                         <span class="comment-date">
                             <i class="far fa-clock"></i> <?= date('d.m.Y H:i', strtotime($comment['created_at'])) ?>
@@ -397,5 +410,39 @@ include 'includes/header.php';
         <?php endif; ?>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const fileInput = document.querySelector('.file-upload-input');
+    const fileUploadText = document.getElementById('file-upload-text');
+    const imagePreview = document.getElementById('image-preview');
+    
+    fileInput.addEventListener('change', function(e) {
+        if (e.target.files.length > 0) {
+            const file = e.target.files[0];
+            fileUploadText.textContent = file.name;
+            
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                imagePreview.innerHTML = `
+                    <div class="preview-container">
+                        <img src="${event.target.result}" alt="Preview">
+                        <button type="button" class="btn btn-remove-image">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                `;
+                
+                document.querySelector('.btn-remove-image').addEventListener('click', function() {
+                    imagePreview.innerHTML = '';
+                    fileInput.value = '';
+                    fileUploadText.textContent = '';
+                });
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+});
+</script>
 
 <?php include 'includes/footer.php'; ?>

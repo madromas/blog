@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Jun 07, 2025 at 10:08 PM
+-- Generation Time: Jun 08, 2025 at 10:19 AM
 -- Server version: 10.11.10-MariaDB-cll-lve
 -- PHP Version: 7.2.34
 
@@ -59,15 +59,16 @@ CREATE TABLE `comments` (
   `post_id` int(11) NOT NULL,
   `user_id` int(11) NOT NULL,
   `content` text NOT NULL,
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `image` varchar(255) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;
 
 --
 -- Dumping data for table `comments`
 --
 
-INSERT INTO `comments` (`id`, `post_id`, `user_id`, `content`, `created_at`) VALUES
-(16, 1, 9, 'Hell yea!', '2025-06-08 00:12:23');
+INSERT INTO `comments` (`id`, `post_id`, `user_id`, `content`, `created_at`, `image`) VALUES
+(16, 1, 9, 'Hell yea!', '2025-06-08 00:12:23', NULL);
 
 -- --------------------------------------------------------
 
@@ -136,8 +137,10 @@ CREATE TABLE `posts` (
 --
 
 INSERT INTO `posts` (`id`, `user_id`, `title`, `content`, `image`, `tags`, `upvotes`, `downvotes`, `views`, `comments_count`, `created_at`) VALUES
-(1, 9, 'Shannon McMullen', 'Noice', 'img_6844d55075b27.webp', '', 1, 0, 2, 1, '2025-06-08 00:12:00'),
-(3, 9, 'Helga Lovekaty', 'girl', 'img_6844e658e6f2c.webp', 'girl, sexy', 0, 0, 1, 0, '2025-06-08 01:24:40');
+(1, 9, 'Shannon McMullen', 'Noice', 'img_6844d55075b27.webp', '', 1, 0, 3, 9, '2025-06-08 00:12:00'),
+(3, 9, 'Helga Lovekaty', 'girl', 'img_6844e658e6f2c.webp', 'girl, sexy', 0, 0, 2, 0, '2025-06-08 01:24:40'),
+(5, 9, 'kirstentoosweet', 'What an ass', 'img_68459379bb403.jpg', 'kirstentoosweet, girl, sexy, ass', 0, 0, 1, 0, '2025-06-08 13:43:21'),
+(6, 9, 'Nicole Borda', '...', 'img_68459577d065d.jpg', 'sexy, latina', 0, 0, 1, 0, '2025-06-08 13:51:51');
 
 -- --------------------------------------------------------
 
@@ -227,7 +230,7 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`id`, `username`, `email`, `password`, `role`, `avatar`, `about`, `rating`, `created_at`, `last_login`, `followers_count`, `show_email`, `allow_private_messages`, `show_online_status`, `profile_visibility`) VALUES
-(9, 'Roman', 'madromas@yahoo.com', '$2y$10$XuBkWSCW2s/3O8izlsxSZeIPjmywyq8Vqh7FIUFMqm.6bJXrtdiii', 'admin', 'img_6840d560b4e12.jpg', 'idiot', 2, '2025-06-04 23:00:56', '2025-06-07 20:52:43', 0, 0, 0, 0, 'private');
+(9, 'Roman', 'madromas@yahoo.com', '$2y$10$XuBkWSCW2s/3O8izlsxSZeIPjmywyq8Vqh7FIUFMqm.6bJXrtdiii', 'admin', 'img_6840d560b4e12.jpg', 'idiot', 2, '2025-06-04 23:00:56', '2025-06-08 08:18:08', 0, 0, 0, 0, 'private');
 
 -- --------------------------------------------------------
 
@@ -402,7 +405,7 @@ ALTER TABLE `votes`
 -- AUTO_INCREMENT for table `comments`
 --
 ALTER TABLE `comments`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=25;
 
 --
 -- AUTO_INCREMENT for table `content_reports`
@@ -414,7 +417,7 @@ ALTER TABLE `content_reports`
 -- AUTO_INCREMENT for table `posts`
 --
 ALTER TABLE `posts`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT for table `private_messages`

@@ -1,18 +1,18 @@
 <?php
-// Конфигурация сайта
+// Database configuration
 define('DB_HOST', 'localhost');
 define('DB_USER', 'DB_USER');
 define('DB_PASS', 'PASS');
 define('DB_NAME', 'DB_NAME');
 
-// Настройки сайта
+// Website configuration
 define('SITE_NAME', 'My Website');
 define('SITE_URL', 'https://url.com');
 define('UPLOAD_DIR', 'uploads/');
 
-// Старт сессии
+// Session start
 session_start();
 
-// Подключение к БД
+// Connect to DB
 require_once 'db.php';
 ?>

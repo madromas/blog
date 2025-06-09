@@ -20,30 +20,59 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
     
     if (empty($password)) {
-        $errors[] = 'Пароль required';
+        $errors[] = 'Password required';
     }
     
-    // Проверка учетных данных
     if (empty($errors)) {
         $stmt = $pdo->prepare("SELECT * FROM users WHERE email = ?");
         $stmt->execute([$email]);
         $user = $stmt->fetch();
-        
+
         if ($user && password_verify($password, $user['password'])) {
             $_SESSION['user_id'] = $user['id'];
-            
-            // Проверка достижения "returned" (если есть last_login)
+
+            // "Remember Me" Functionality
+            if (isset($_POST['remember'])) {
+                $selector = bin2hex(random_bytes(8));  // 16 bytes (128 bits)
+                $token = random_bytes(32);            // 32 bytes (256 bits)
+                $hashedToken = hash('sha256', $token); // Hash the token for storage
+
+                // Calculate expiry date (e.g., 30 days)
+                $expiry = time() + (30 * 24 * 60 * 60); // 30 days in seconds
+                $expiryDate = date('Y-m-d H:i:s', $expiry);
+
+                // Store selector, hashed token, and user ID in the database
+                $insertStmt = $pdo->prepare("
+                    INSERT INTO auth_tokens (user_id, selector, hashed_token, expiry)
+                    VALUES (?, ?, ?, ?)
+                ");
+                $insertStmt->execute([$user['id'], $selector, $hashedToken, $expiryDate]);
+
+                // Set the "Remember Me" cookie
+                setcookie(
+                    'remember_me',
+                    $selector . ':' . bin2hex($token),
+                    $expiry,
+                    '/',  // Path:  Consider making this more specific for security
+                    '',   // Domain: Leave blank for current domain.  If it does not work, specify domain name.
+                    true,  // Secure:  Send only over HTTPS
+                    true   // HttpOnly:  Prevent JavaScript access
+                );
+            }
+
+
+            // Check for "returned" achievement (if applicable) - moved here
             if (isset($user['last_login']) && $user['last_login']) {
                 $last_login = strtotime($user['last_login']);
                 if ($last_login && (time() - $last_login) > 86400) {
                     checkAchievement($_SESSION['user_id'], 'returned');
                 }
             }
-            
-            // Обновление времени последнего входа
+
+            // Update last login time - moved here
             $updateStmt = $pdo->prepare("UPDATE users SET last_login = NOW() WHERE id = ?");
             $updateStmt->execute([$_SESSION['user_id']]);
-            
+
             header('Location: index.php');
             exit;
         } else {
@@ -98,7 +127,7 @@ include 'includes/header.php';
     }
     
     .form-group input {
-        width: 100%;
+        width: auto;
         padding: 12px 15px;
         border-radius: var(--border-radius);
         background-color: var(--darker-bg);
@@ -171,6 +200,12 @@ include 'includes/header.php';
         <div class="form-group">
             <label for="password">Password</label>
             <input type="password" id="password" name="password" required>
+        </div>
+
+        <div class="form-group">
+            <label for="remember">
+                <input type="checkbox" id="remember" name="remember"> Remember me
+            </label>
         </div>
         
         <button type="submit" class="btn btn-primary">Login</button>

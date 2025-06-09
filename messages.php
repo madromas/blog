@@ -231,7 +231,7 @@ include 'includes/header.php';
     }
 
     .message.sent {
-        justify-content: flex-end;
+        justify-content: end;
     }
 
     .message.received {

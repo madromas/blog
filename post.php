@@ -193,13 +193,6 @@ include 'includes/header.php';
         margin-bottom: 10px;
     }
 
-    .comment-author .avatar {
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
-        object-fit: cover;
-    }
-
     .comment-author a {
         font-weight: 600;
     }
@@ -280,7 +273,9 @@ include 'includes/header.php';
         }
         ?>
         
-        <h1><?= htmlspecialchars($post['title']) ?></h1>
+        <h1><?= nl2br(htmlspecialchars_decode(htmlspecialchars($post['title'], ENT_QUOTES, 'UTF-8'))) ?>
+
+</h1>
         
         <div class="post-meta">
             
@@ -303,7 +298,7 @@ include 'includes/header.php';
         <?php endif; ?>
         
         <div class="post-text-full">
-            <p><?= html_entity_decode(htmlspecialchars($post['content'])) ?></p>
+            <p><?= nl2br(embedMediaLinks(html_entity_decode(htmlspecialchars($post['content'])))) ?></p>
         </div>
         
         <?php if (!empty($post['tags'])): ?>
@@ -394,7 +389,8 @@ include 'includes/header.php';
                     </div>
 
                    <div class="comment-content">
-    <p><?= nl2br(html_entity_decode(htmlspecialchars($comment['content']))) ?></p>
+    <p><?= nl2br(embedMediaLinks(html_entity_decode(htmlspecialchars($comment['content'])), 'comment')) ?>
+</p>
     <?php if (!empty($comment['image'])): ?>
         <p><a data-fancybox data-caption="Comment Image" href="uploads/<?= htmlspecialchars($comment['image']) ?>"><img src="uploads/<?= htmlspecialchars($comment['image']) ?>" alt="Comment Image" class="comment-image"></a></p>
     <?php endif; ?>

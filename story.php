@@ -165,7 +165,8 @@ include 'includes/header.php';
             
             <?php if (!empty($story['content'])): ?>
                 <div class="story-text">
-                    <?= nl2br(htmlspecialchars($story['content'])) ?>
+                    <?= nl2br(embedMediaLinks(html_entity_decode(htmlspecialchars($story['content'])))) ?>
+
                 </div>
             <?php endif; ?>
         </div>

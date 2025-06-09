@@ -257,16 +257,17 @@ include 'includes/header.php';
                         <span class="vote-count"><?= $post['upvotes'] - $post['downvotes'] ?></span>
                     </div>
                     <div class="post-content">
-                        <h2><a href="post.php?id=<?= $post['id'] ?>"><?= htmlspecialchars($post['title']) ?></a></h2>
+                        <h2><a href="post.php?id=<?= $post['id'] ?>"><?= nl2br(htmlspecialchars_decode(htmlspecialchars($post['title'], ENT_QUOTES, 'UTF-8'))) ?>
+</a></h2>
                         <div class="post-meta">
                             <span class="post-author"><a href="profile.php?id=<?= $post['user_id'] ?>"><?= htmlspecialchars($post['username']) ?></a></span>
                             <span class="post-date"><?= date('d.m.Y H:i', strtotime($post['created_at'])) ?></span>
                         </div>
                         <div class="post-excerpt">
                             <?php
-$truncated_content = substr($post['content'], 0, 200); // Truncate the string
+$truncated_content = truncateText($post['content'], 200); 
 ?>
-<p><?= html_entity_decode(htmlspecialchars($truncated_content)) ?>...</p>
+<p><?= nl2br(embedMediaLinks(html_entity_decode(htmlspecialchars($truncated_content)))) ?>...</p>
                         </div>
                         <div class="post-tags">
                             <?php

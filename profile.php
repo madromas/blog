@@ -521,7 +521,7 @@ include 'includes/header.php';
                         <span class="vote-count"><?= $post['upvotes'] - $post['downvotes'] ?></span>
                     </div>
                     <div class="post-content">
-                        <h3><a href="post.php?id=<?= $post['id'] ?>"><?= htmlspecialchars($post['title']) ?></a></h3>
+                        <h3><a href="post.php?id=<?= $post['id'] ?>"><?= nl2br(htmlspecialchars_decode(htmlspecialchars($post['title'], ENT_QUOTES, 'UTF-8'))) ?></a></h3>
                         <div class="post-meta">
                             <span class="post-date"><?= date('d.m.Y H:i', strtotime($post['created_at'])) ?></span>
                         </div>

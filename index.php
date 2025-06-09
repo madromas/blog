@@ -3,6 +3,20 @@
 require_once 'includes/config.php';
 require_once 'includes/functions.php';
 
+// Login page if user is not logged in
+
+// Check for "Remember Me" cookie before session-based login
+//if (!isLoggedIn()) {  // Only check the cookie if not already logged in
+//  if(checkRememberMeCookie($pdo)){
+//        header('Location: index.php'); //Redirect to index if cookie login is successful
+//        exit;
+//    }
+//}
+//if (!isLoggedIn()) {
+//    header('Location: login.php');
+//    exit;
+//}
+
 $popular_posts = getPopularPosts();
 $new_posts = getNewPosts();
 
@@ -52,6 +66,9 @@ include 'includes/header.php';
         font-weight: 500;
     }
   
+.new-comments-list p{
+        margin-bottom: 0px;
+    }
 
     .new-comments-list li{
         background-color: rgba(0, 0, 0, 0.2);
@@ -324,6 +341,7 @@ include 'includes/header.php';
 
 .new-comments-list {
         list-style: none;
+        word-wrap: break-word;
     }
 
     .new-comments-list li:last-child {
@@ -381,7 +399,6 @@ include 'includes/header.php';
 
         .story-item {
             flex: 0 0 100px;
-            height: 170px;
         }
         
         .create-story-text {
@@ -424,7 +441,19 @@ include 'includes/header.php';
 </div>
 
 <div class="content">
-    <div class="main-content">
+<div class="main-content">
+
+<div class="header-nav">
+                <ul class="nav-list">
+                    <li class="nav-item"><a href="?tab=new" class="<?= ($_GET['tab'] ?? 'new') == 'new' ? 'active' : '' ?>"><i class="fas fa-newspaper"></i> New</a></li>
+                    <li class="nav-item"><a href="?tab=popular" class="<?= ($_GET['tab'] ?? 'new') == 'popular' ? 'active' : '' ?>"><i class="fas fa-fire"></i> Popular</a></li>
+                </ul>
+</div>
+    <?php
+    $tab = $_GET['tab'] ?? 'new'; // Get the active tab from the query string
+
+    if ($tab == 'popular'): ?>
+
         <h2><i class="fas fa-fire"></i> Popular posts</h2>
         <?php foreach ($popular_posts as $post): ?>
             <div class="post">
@@ -434,18 +463,21 @@ include 'includes/header.php';
                     <button class="vote-btn downvote" data-post-id="<?= $post['id'] ?>" data-type="down"><i class="fas fa-arrow-down"></i></button>
                 </div>
                 <div class="post-content">
-                    <h2><a href="post.php?id=<?= $post['id'] ?>"><?= htmlspecialchars($post['title']) ?></a></h2>
+                    <h2><a href="post.php?id=<?= $post['id'] ?>"><?= nl2br(htmlspecialchars_decode(htmlspecialchars($post['title'], ENT_QUOTES, 'UTF-8'))) ?>
+</a></h2>
                     <?php if (!empty($post['image'])): ?>
                         <div class="post-image">
                             <a href="post.php?id=<?= $post['id'] ?>"><img src="<?= SITE_URL ?>/uploads/<?= $post['image'] ?>" alt="<?= htmlspecialchars($post['title']) ?>"></a>
                         </div>
                     <?php endif; ?>
                     <div class="post-text">
-                        <?php
-$truncated_content = substr($post['content'], 0, 300); // Truncate the string
-?>
-<p><?= html_entity_decode(htmlspecialchars($truncated_content)) ?>...</p>
-                    </div>
+    <?php
+    $truncated_content = truncateText($post['content'], 1000);
+    ?>
+    <p><?= nl2br(embedMediaLinks(html_entity_decode(htmlspecialchars($truncated_content)))) ?></p>
+</div>
+
+
                     <div class="post-meta">
                         <span class="post-author"><a href="profile.php?id=<?= $post['user_id'] ?>"><i class="fas fa-user"></i> <?= htmlspecialchars($post['username']) ?></a></span>
                         <span class="post-date"><i class="far fa-clock"></i> <?= date('d.m.Y H:i', strtotime($post['created_at'])) ?></span>
@@ -457,7 +489,48 @@ $truncated_content = substr($post['content'], 0, 300); // Truncate the string
                 </div>
             </div>
         <?php endforeach; ?>
-    </div>
+
+<?php elseif ($tab == 'new'): ?>
+
+        <h2><i class="fas fa-newspaper"></i> New posts</h2>
+        <?php foreach ($new_posts as $post): ?>
+            <div class="post">
+                <div class="post-votes">
+                    <button class="vote-btn upvote" data-post-id="<?= $post['id'] ?>" data-type="up"><i class="fas fa-arrow-up"></i></button>
+                    <span class="vote-count"><?= $post['upvotes'] - $post['downvotes'] ?></span>
+                    <button class="vote-btn downvote" data-post-id="<?= $post['id'] ?>" data-type="down"><i class="fas fa-arrow-down"></i></button>
+                </div>
+                <div class="post-content">
+                    <h2><a href="post.php?id=<?= $post['id'] ?>"><?= nl2br(htmlspecialchars_decode(htmlspecialchars($post['title'], ENT_QUOTES, 'UTF-8'))) ?>
+</a></h2>
+                    <?php if (!empty($post['image'])): ?>
+                        <div class="post-image">
+                            <a href="post.php?id=<?= $post['id'] ?>"><img src="<?= SITE_URL ?>/uploads/<?= $post['image'] ?>" alt="<?= htmlspecialchars($post['title']) ?>"></a>
+                        </div>
+                    <?php endif; ?>
+                    <div class="post-text">
+    <?php
+    $truncated_content = truncateText($post['content'], 1000);
+    ?>
+    <p><?= nl2br(embedMediaLinks(html_entity_decode(htmlspecialchars($truncated_content)))) ?></p>
+</div>
+
+
+                    <div class="post-meta">
+                        <span class="post-author"><a href="profile.php?id=<?= $post['user_id'] ?>"><i class="fas fa-user"></i> <?= htmlspecialchars($post['username']) ?></a></span>
+                        <span class="post-date"><i class="far fa-clock"></i> <?= date('d.m.Y H:i', strtotime($post['created_at'])) ?></span>
+                        <span class="post-comments"><i class="fas fa-comment"></i> <?= $post['comments_count'] ?></span>
+                        <span class="post-views">
+                <i class="fas fa-eye"></i> <?= $post['views'] ?>
+            </span>
+                    </div>
+                </div>
+            </div>
+        <?php endforeach; ?>
+    
+    <?php endif; ?>
+</div>
+
     
     <div class="sidebar">
 
@@ -474,7 +547,10 @@ $truncated_content = substr($post['content'], 0, 300); // Truncate the string
                     <?php
 $truncated_content = substr($comment['content'], 0, 50); // Truncate the string
 ?>
-<p><a href="post.php?id=<?= $comment['post_id'] ?>"><?= html_entity_decode(htmlspecialchars($truncated_content)) ?></a></p>
+<p><a href="post.php?id=<?= $comment['post_id'] ?>"><?= nl2br(embedMediaLinks(html_entity_decode(htmlspecialchars($truncated_content)))) ?></a>
+
+
+</p>
                 <p style="font-size:.9rem;text-align: right;"><i class="fa-solid fa-arrow-turn-up" style="transform: rotate(90deg); font-size:.8em"></i> <a href="post.php?id=<?= $comment['post_id'] ?>" target="_blank"><?= htmlspecialchars($comment['post_title']) ?></a></p>
                 </li>
             <?php endforeach; ?>
@@ -489,7 +565,8 @@ $truncated_content = substr($comment['content'], 0, 50); // Truncate the string
             <ul class="new-posts-list">
                 <?php foreach ($new_posts as $post): ?>
                     <li>
-                        <a href="post.php?id=<?= $post['id'] ?>"><?= htmlspecialchars($post['title']) ?></a>
+                        <a href="post.php?id=<?= $post['id'] ?>"><?= nl2br(htmlspecialchars_decode(htmlspecialchars($post['title'], ENT_QUOTES, 'UTF-8'))) ?>
+</a>
                         <span class="post-meta"><?= date('d.m.Y', strtotime($post['created_at'])) ?></span>
                     </li>
                 <?php endforeach; ?>

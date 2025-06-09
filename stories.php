@@ -229,8 +229,11 @@ include 'includes/header.php';
                         <div class="card-body">
                             <?php if (!empty($story['content'])): ?>
                                 <div class="story-content">
-                                    <?= nl2br(htmlspecialchars(substr($story['content'], 0, 100))) ?>
-                                    <?= strlen($story['content']) > 100 ? '...' : '' ?>
+                                   <?php
+$truncated_content = truncateText($story['content'], 100);  // Use the truncateText function
+?>
+<?= nl2br(embedMediaLinks(html_entity_decode(htmlspecialchars($truncated_content)))) ?>
+<?= mb_strlen($story['content'], 'UTF-8') > 100 ? '...' : '' ?>
                                 </div>
                             <?php endif; ?>
                         </div>

@@ -1192,8 +1192,8 @@ $truncated_content = substr($comment['content'], 0, 50); // Truncate the string
                                     <td><?= $story['id'] ?></td>
                                     <td>
                                         <?php if ($story['image']): ?>
-                                            <img src="" 
-                                                 alt="История" class="story-preview">
+                                            <img src="<?= SITE_URL ?>/uploads/<?= htmlspecialchars($story['image']) ?>" 
+                                                 alt="Story" class="story-preview">
                                         <?php endif; ?>
                                         <?= htmlspecialchars(substr($story['content'], 0, 50)) ?>
                                         <?= strlen($story['content']) > 50 ? '...' : '' ?>

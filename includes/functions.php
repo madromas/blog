@@ -823,6 +823,60 @@ function deleteStory(int $story_id): bool {
     }
 }
 
+function embedMediaLinks($text, $context = 'post') { // Added $context parameter
+  // Regular expression to find URLs ending in common media extensions
+  $pattern = '/(https?:\/\/[^\s]+?\.(?:mp4|avi|mov|webm|ogg|mp3|jpg|jpeg|png|gif|webp))/i';
+
+  // Callback function to replace URLs with HTML tags
+  $text = preg_replace_callback($pattern, function ($matches) use ($context) { // Added use ($context)
+    $url = htmlspecialchars($matches[0]); // Escape the URL for safety
+    $extension = strtolower(pathinfo($url, PATHINFO_EXTENSION)); // Get the file extension
+
+    switch ($extension) {
+      case 'mp4':
+      case 'avi':
+      case 'mov':
+      case 'webm':
+      case 'ogg':
+          if ($context === 'post') {
+            return '<video src="' . $url . '" type="video/' . $extension . '" controls>Your browser does not support the video tag.</video>';
+          } else {
+            return $url; // Leave as plain text in comments
+          }
+      case 'mp3':
+          if ($context === 'post') {
+            return '<audio controls><source src="' . $url . '" type="audio/mpeg">Your browser does not support the audio element.</audio>';
+          } else {
+            return $url;
+          }
+      case 'jpg':
+      case 'jpeg':
+      case 'png':
+      case 'gif':
+      case 'webp':
+        return '<img src="' . $url . '" alt="Embedded Image">';
+      default:
+        return $url; // If not a recognized media type, leave the URL as is
+    }
+  }, $text);
+
+  return $text;
+}
+
+function truncateText($text, $length, $ellipsis = "...") {
+    if (mb_strlen($text, 'UTF-8') <= $length) {
+        return $text;
+    }
+
+    $truncated = mb_substr($text, 0, $length, 'UTF-8');
+
+    // Make sure we don't break any HTML tags
+    if (preg_match('/<(\w+)[^>]*>$/', $truncated, $matches)) {
+        $truncated = mb_substr($truncated, 0, mb_strlen($truncated, 'UTF-8') - mb_strlen($matches[0], 'UTF-8'), 'UTF-8');
+    }
+
+    return $truncated . $ellipsis;
+}
 
 /**
  * Возвращает цвет для уровня

@@ -881,6 +881,58 @@ function truncateText($text, $length, $ellipsis = "...") {
 /**
  * Возвращает цвет для уровня
  */
+
+function checkRememberMeCookie($pdo) {
+    if (isset($_COOKIE['remember_me'])) {
+        list($selector, $token) = explode(':', $_COOKIE['remember_me']);
+
+        if (ctype_xdigit($selector) && ctype_xdigit($token) && strlen($selector) === 16 && strlen($token) === 64) { //Validate selector and token format
+            $hashedToken = hash('sha256', hex2bin($token));
+
+            $stmt = $pdo->prepare("
+                SELECT user_id FROM auth_tokens
+                WHERE selector = ? AND hashed_token = ? AND expiry > NOW()
+            ");
+            $stmt->execute([$selector, $hashedToken]);
+            $result = $stmt->fetch();
+
+            if ($result) {
+                $_SESSION['user_id'] = $result['user_id'];
+
+                // Extend the expiry of the cookie and database entry (optional)
+                $expiry = time() + (30 * 24 * 60 * 60); // Extend for another 30 days
+                $expiryDate = date('Y-m-d H:i:s', $expiry);
+
+                $updateStmt = $pdo->prepare("
+                    UPDATE auth_tokens SET expiry = ? WHERE selector = ?
+                ");
+                $updateStmt->execute([$expiryDate, $selector]);
+
+                setcookie(
+                    'remember_me',
+                    $selector . ':' . $token,  //Keep the original token
+                    $expiry,
+                    '/',
+                    '',
+                    true,
+                    true
+                );
+
+                return true; // User was automatically logged in
+            } else {
+                // Token is invalid or expired - delete the cookie
+                setcookie('remember_me', '', time() - 3600, '/');  //Clear the cookie
+                $deleteStmt = $pdo->prepare("DELETE FROM auth_tokens WHERE selector = ?");
+                $deleteStmt->execute([$selector]);
+            }
+        } else {
+            //Invalid cookie format. Delete the cookie
+            setcookie('remember_me', '', time() - 3600, '/');
+        }
+    }
+    return false; // User was not automatically logged in
+}
+
 function getLevelColor($level_name) {
     switch (strtolower($level_name)) {
         case 'bronze': return '#cd7f32';

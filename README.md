@@ -1,5 +1,5 @@
 # Simple, lightweight community blog
-Another simple blog. This is working, but unfinished blog. Running on php 8.2. Some files are missing. Overall usable. Translated to English. Anyone can fork it, and contribute to it.
+Another simple blog. This is working platform, some features are missing. Overall usable. Running on php 8.2. Translated to English. Anyone can fork it, and contribute to it.
 
 ## Install:
 

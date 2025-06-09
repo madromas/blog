@@ -45,6 +45,23 @@ a:hover {
     text-decoration: underline;
 }
 
+@media (max-width: 992px) {
+   .main-content .header-nav {
+        display: flex;
+    }
+}
+
+.header-nav a.active {
+            background-color: rgba(76, 175, 80, 0.1);
+        }
+
+.main-content .header-nav li  {
+    margin: 0 5px;
+}     
+
+.main-content .header-nav  {
+    margin-bottom: 15px;
+}     
 
 /* Header Styles */
 .header {
@@ -411,7 +428,7 @@ a:hover {
 
 .post-text {
     margin-bottom: 15px;
-    color: var(--text-muted);
+    color: var(--text-color);
 }
 
 .post-meta span {
@@ -1186,6 +1203,10 @@ a:hover {
 }
 
 /* Общие стили для форм */
+.container .container {
+    padding: 0px!important;
+}
+
 .container {
     width: 100%;
     max-width: 1200px;
@@ -1347,29 +1368,35 @@ a:hover {
     font-size: 1.1rem;
 }
 
+
 /* Загрузка файлов */
+
+.comments-section .file-upload-label {
+    display: inline-flex;
+    gap: 0px;
+}
+
 .file-upload-label {
     display: flex;
     align-items: center;
-    justify-content: center;
-    padding: 15px;
-    border: 2px dashed #333;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    flex-direction: column;
     gap: 10px;
-    text-align: center;
-    color: #9e9e9e;
+    padding: 12px 15px;
+    background-color: rgba(76, 175, 80, 0.1);
+    border: 1px dashed var(--accent-green);
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    transition: var(--transition);
 }
 
 .file-upload-label:hover {
     border-color: #4CAF50;
     color: #e0e0e0;
+    background-color: rgba(76, 175, 80, 0.2);
 }
 
 .file-upload-label i {
     font-size: 1.5rem;
+    color: var(--accent-green);
 }
 
 .file-upload-input {
@@ -1396,6 +1423,17 @@ a:hover {
 /* Превью изображений */
 .image-preview, .story-preview {
     margin-top: 15px;
+}
+
+.comment-image {
+    max-width: 400px;
+    border-radius: var(--radius);
+}
+
+@media (max-width: 768px) {
+    .comment-image {
+    width: 100%;
+}
 }
 
 .preview-container {
@@ -3100,7 +3138,7 @@ a:hover {
     width: 32px;
     height: 32px;
     border-radius: 50%;
-    margin-right: 10px;
+    margin-right: 0px;
     border: 2px solid var(--primary-color);
 }
 
@@ -3345,3 +3383,23 @@ a:hover {
         min-height: 100px;
         resize: vertical;
     }
+
+    @media (max-width: 992px) {
+        video {
+          border: 0;
+width: 100%!important;
+max-height: 500px !important;
+border-radius: 5px;
+        }
+      }
+
+ video {
+  border: 0;
+  width: 600px;
+  max-height:450px;
+  border-radius: 5px;
+}  
+
+.story-text video {
+    width: 100%;
+}

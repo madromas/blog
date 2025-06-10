@@ -1,6 +1,6 @@
 <?php
 require_once 'includes/config.php';
-require_once 'includes/functions.php';
+require_once 'includes/functions.php'; require_once 'includes/auth_check.php';
 
 if (!isLoggedIn() || getUser($_SESSION['user_id'])['role'] != 'admin') {
     header('Location: index.php');

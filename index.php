@@ -1,21 +1,7 @@
 <?php
 
 require_once 'includes/config.php';
-require_once 'includes/functions.php';
-
-// Login page if user is not logged in
-
-// Check for "Remember Me" cookie before session-based login
-//if (!isLoggedIn()) {  // Only check the cookie if not already logged in
-//  if(checkRememberMeCookie($pdo)){
-//        header('Location: index.php'); //Redirect to index if cookie login is successful
-//        exit;
-//    }
-//}
-//if (!isLoggedIn()) {
-//    header('Location: login.php');
-//    exit;
-//}
+require_once 'includes/functions.php'; require_once 'includes/auth_check.php';
 
 $popular_posts = getPopularPosts();
 $new_posts = getNewPosts();
@@ -281,14 +267,6 @@ include 'includes/header.php';
         line-height: 1.5;
     }
 
-    .post-meta {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 15px;
-        font-size: 0.9rem;
-        color: var(--text-secondary);
-    }
-
 .new-comments-list .post-meta{
     margin-bottom: 10px;
 }
@@ -301,14 +279,6 @@ include 'includes/header.php';
     /* Sidebar */
     .sidebar {
         width: 300px;
-    }
-
-    .sidebar-widget {
-        background-color: var(--card-bg);
-        border-radius: var(--border-radius);
-        box-shadow: var(--shadow);
-        padding: 15px;
-        margin-bottom: 20px;
     }
 
     .sidebar-widget h3 {
@@ -534,7 +504,7 @@ include 'includes/header.php';
     
     <div class="sidebar">
 
-<div class="sidebar-widget">
+<div class="comments-widget">
     <h3><i class="fas fa-comments"></i> Latest Comments</h3>
     <ul class="new-comments-list">
         <?php if ($latestComments): ?>

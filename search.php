@@ -1,6 +1,6 @@
 <?php
 require_once 'includes/config.php';
-require_once 'includes/functions.php';
+require_once 'includes/functions.php'; require_once 'includes/auth_check.php';
 
 $query = isset($_GET['q']) ? sanitize($_GET['q']) : '';
 $tag = isset($_GET['tag']) ? sanitize($_GET['tag']) : '';

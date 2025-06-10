@@ -1,6 +1,6 @@
 <?php
 require_once 'includes/config.php';
-require_once 'includes/functions.php';
+require_once 'includes/functions.php'; require_once 'includes/auth_check.php';
 
 // Get the post ID from the URL
 $post_id = isset($_GET['id']) ? (int)$_GET['id'] : 0;

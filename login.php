@@ -1,6 +1,6 @@
 <?php
 require_once 'includes/config.php';
-require_once 'includes/functions.php';
+require_once 'includes/functions.php'; require_once 'includes/auth_check.php';
 
 if (isLoggedIn()) {
     header('Location: index.php');
@@ -173,7 +173,7 @@ include 'includes/header.php';
     @media (max-width: 768px) {
         .auth-form {
             padding: 20px;
-            margin: 20px 15px;
+            margin: 20px 0px;
         }
     }
 </style>

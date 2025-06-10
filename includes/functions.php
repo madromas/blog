@@ -3,12 +3,12 @@
  * Функции для работы с приложением
  */
 
-// Функция для санитизации ввода
+// Corrected sanitize function
 function sanitize($data) {
     if (is_array($data)) {
         return array_map('sanitize', $data);
     }
-    return htmlspecialchars(strip_tags(trim($data)), ENT_QUOTES, 'UTF-8');
+    return trim(strip_tags($data)); // Removed htmlspecialchars()
 }
 
 // Проверка авторизации
@@ -235,7 +235,7 @@ function time_remaining($datetime) {
 }
 
 // Получение популярных постов с обработкой ошибок
-function getPopularPosts($limit = 10) {
+function getPopularPosts($limit = 20) {
     global $pdo;
     
     try {
@@ -259,7 +259,7 @@ function getPopularPosts($limit = 10) {
 }
 
 // Получение новых постов с обработкой ошибок
-function getNewPosts($limit = 10) {
+function getNewPosts($limit = 20) {
     global $pdo;
     
     try {
@@ -564,13 +564,12 @@ function getPostById(int $post_id): ?array {
  * @param string $title The new title of the post.
  * @param string $content The new content of the post.
  * @param string $image The new image URL of the post.
- * @param int $category_id The new category ID of the post.
  * @return bool True on success, false on failure.
  */
-function updatePost(int $post_id, string $title, string $content, string $image, string $tags): bool {
+function updatePost(int $post_id, string $title, string $content, ?string $image, string $tags): bool {
     global $pdo;
 
-    $sql = "UPDATE posts SET title = ?, content = ?, image = ?, tags = ? WHERE id = ?";  // Remove category_id from the SQL
+    $sql = "UPDATE posts SET title = ?, content = ?, image = ?, tags = ? WHERE id = ?"; 
     $stmt = $pdo->prepare($sql);
 
     if ($stmt === false) {
@@ -578,7 +577,7 @@ function updatePost(int $post_id, string $title, string $content, string $image,
         return false;
     }
 
-    $result = $stmt->execute([$title, $content, $image, $tags, $post_id]); //Remove category_id
+    $result = $stmt->execute([$title, $content, $image, $tags, $post_id]);
 
     if ($result) {
         $stmt->closeCursor();
@@ -878,10 +877,6 @@ function truncateText($text, $length, $ellipsis = "...") {
     return $truncated . $ellipsis;
 }
 
-/**
- * Возвращает цвет для уровня
- */
-
 function checkRememberMeCookie($pdo) {
     if (isset($_COOKIE['remember_me'])) {
         list($selector, $token) = explode(':', $_COOKIE['remember_me']);
@@ -932,6 +927,10 @@ function checkRememberMeCookie($pdo) {
     }
     return false; // User was not automatically logged in
 }
+
+/**
+ * Возвращает цвет для уровня
+ */
 
 function getLevelColor($level_name) {
     switch (strtolower($level_name)) {

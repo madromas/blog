@@ -1,12 +1,10 @@
 <?php
 
 require_once 'includes/config.php';
-require_once 'includes/functions.php'; require_once 'includes/auth_check.php';
+require_once 'includes/functions.php';
+require_once 'includes/auth_check.php';
 
-$popular_posts = getPopularPosts();
-$new_posts = getNewPosts();
-
-// Получаем активные истории для карусели
+// Fetch stories, comments, and tags (these are independent of pagination)
 $stmt = $pdo->query("
     SELECT s.*, u.username, u.avatar 
     FROM stories s
@@ -17,23 +15,59 @@ $stmt = $pdo->query("
 ");
 $stories = $stmt->fetchAll();
 
-//Fetch latest comments from the database
 $latestComments = getLatestComments();
-
-// Fetch all unique tags from the database
 $allTags = getAllTags();
 
-$stmt = $pdo->prepare("
-    SELECT c.*, u.username, u.avatar 
-    FROM comments c 
-    LEFT JOIN users u ON c.user_id = u.id 
-    WHERE c.post_id = ? 
-    ORDER BY c.created_at DESC
-");
-$comments = $stmt->fetchAll();
+// 1. Get posts_per_page from settings
+try {
+    $stmt = $pdo->prepare("SELECT posts_per_page FROM settings WHERE id = 1");
+    $stmt->execute();
+    $settings = $stmt->fetch(PDO::FETCH_ASSOC);
+    $posts_per_page = (int)$settings['posts_per_page'] ?? 10;
+} catch (PDOException $e) {
+    error_log("Error getting posts_per_page: " . $e->getMessage());
+    $posts_per_page = 10;
+}
+
+// 2. Determine current page number
+$page = isset($_GET['page']) && is_numeric($_GET['page']) ? (int)$_GET['page'] : 1;
+if ($page < 1) {
+    $page = 1;
+}
+
+// 3. Get the active tab
+$tab = $_GET['tab'] ?? 'new';
+
+// 4. Fetch posts (both new and popular) regardless of active tab
+$per_page = $posts_per_page;
+$new_posts = getNewPosts($page, $per_page);
+$popular_posts = getPopularPosts($page, $per_page);
+
+// 5. Count total posts (for pagination)
+try {
+    $stmt = $pdo->prepare("SELECT COUNT(*) FROM posts");
+    $stmt->execute();
+    $total_posts = $stmt->fetchColumn();
+} catch (PDOException $e) {
+    error_log("Error counting posts: " . $e->getMessage());
+    $total_posts = 0;
+}
+
+try {
+    $stmt = $pdo->prepare("SELECT COUNT(*) FROM posts ORDER BY p.upvotes DESC");
+    $stmt->execute();
+    $total_popular_posts = $stmt->fetchColumn();
+} catch (PDOException $e) {
+    error_log("Error counting popular posts: " . $e->getMessage());
+    $total_popular_posts = 0;
+}
+
+// 6. Calculate total pages
+$total_pages = ceil($total_posts / $per_page);
 
 $page_title = 'Home';
 include 'includes/header.php';
+
 ?>
 <style>
     /* Stories Carousel - Modern Facebook-like */
@@ -460,6 +494,23 @@ include 'includes/header.php';
             </div>
         <?php endforeach; ?>
 
+        <?php if ($total_pages > 1): ?>
+            <div class="pagination">
+                <?php if ($page > 1): ?>
+                    <a href="index.php?tab=popular&page=<?= $page - 1 ?>" class="page-link">&laquo; Back</a>
+                <?php endif; ?>
+
+                <?php for ($i = 1; $i <= $total_pages; $i++): ?>
+                    <a href="index.php?tab=popular&page=<?= $i ?>"
+                       class="page-link <?= $i == $page ? 'active' : '' ?>"><?= $i ?></a>
+                <?php endfor; ?>
+
+                <?php if ($page < $total_pages): ?>
+                    <a href="index.php?tab=popular&page=<?= $page + 1 ?>" class="page-link">Forward &raquo;</a>
+                <?php endif; ?>
+            </div>
+        <?php endif; ?>
+
 <?php elseif ($tab == 'new'): ?>
 
         <h2><i class="fas fa-newspaper"></i> New posts</h2>
@@ -497,6 +548,22 @@ include 'includes/header.php';
                 </div>
             </div>
         <?php endforeach; ?>
+    <?php if ($total_pages > 1): ?>
+            <div class="pagination">
+                <?php if ($page > 1): ?>
+                    <a href="index.php?tab=new&page=<?= $page - 1 ?>" class="page-link">&laquo; Back</a>
+                <?php endif; ?>
+
+                <?php for ($i = 1; $i <= $total_pages; $i++): ?>
+                    <a href="index.php?tab=new&page=<?= $i ?>"
+                       class="page-link <?= $i == $page ? 'active' : '' ?>"><?= $i ?></a>
+                <?php endfor; ?>
+
+                <?php if ($page < $total_pages): ?>
+                    <a href="index.php?tab=new&page=<?= $page + 1 ?>" class="page-link">Forward &raquo;</a>
+                <?php endif; ?>
+            </div>
+        <?php endif; ?>
     
     <?php endif; ?>
 </div>

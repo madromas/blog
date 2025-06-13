@@ -188,29 +188,7 @@ include 'includes/header.php';
         gap: 8px;
     }
 
-    /* Pagination */
-    .pagination {
-        display: flex;
-        justify-content: center;
-        gap: 5px;
-        margin-top: 30px;
-    }
-
-    .page-link {
-        padding: 8px 12px;
-        background-color: rgba(0, 0, 0, 0.2);
-        border-radius: var(--border-radius);
-        transition: var(--transition);
-    }
-
-    .page-link:hover {
-        background-color: rgba(76, 175, 80, 0.2);
-    }
-
-    .page-link.active {
-        background: var(--accent-gradient);
-        color: white;
-    }
+    
 
     @media (max-width: 768px) {
         .search-results {

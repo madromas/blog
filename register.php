@@ -15,55 +15,57 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $email = sanitize($_POST['email']);
     $password = $_POST['password'];
     $password_confirm = $_POST['password_confirm'];
-    
-    // Валидация
+
+    // Валидация (Validation)
     if (empty($username)) {
         $errors[] = 'User name is required';
     } elseif (strlen($username) < 3) {
         $errors[] = 'The user name must be at least 3 characters long.';
     }
-    
+
     if (empty($email)) {
         $errors[] = 'Email is required';
     } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $errors[] = 'Incorrect email address';
     }
-    
+
     if (empty($password)) {
         $errors[] = 'Password is required';
     } elseif (strlen($password) < 6) {
         $errors[] = 'Password must be at least 6 characters long.';
     }
-    
+
     if ($password !== $password_confirm) {
         $errors[] = 'Passwords do not match';
     }
-    
-    // Проверка уникальности username и email
+
+    // Проверка уникальности username и email (Check username and email uniqueness)
     $stmt = $pdo->prepare("SELECT id FROM users WHERE username = ? OR email = ?");
     $stmt->execute([$username, $email]);
     if ($stmt->fetch()) {
         $errors[] = 'A user with that name or email already exists';
     }
-    
-    // Если ошибок нет - регистрируем пользователя
+
+    // Если ошибок нет - регистрируем пользователя (If there are no errors - register the user)
     if (empty($errors)) {
+        require_once 'includes/config.php'; // Make sure config.php is included
         $hashed_password = password_hash($password, PASSWORD_DEFAULT);
         $avatar = 'default.png';
-        
+        $role = DEFAULT_USER_ROLE; // Get the default user role from the config
+
         $stmt = $pdo->prepare("
-            INSERT INTO users (username, email, password, avatar, created_at) 
-            VALUES (?, ?, ?, ?, NOW())
+            INSERT INTO users (username, email, password, avatar, role, created_at)
+            VALUES (?, ?, ?, ?, ?, NOW())
         ");
-        $stmt->execute([$username, $email, $hashed_password, $avatar]);
-        
-        // Автоматический вход после регистрации
+        $stmt->execute([$username, $email, $hashed_password, $avatar, $role]);
+
+        // Автоматический вход после регистрации (Automatic login after registration)
         $user_id = $pdo->lastInsertId();
         $_SESSION['user_id'] = $user_id;
-        
-        // Проверка достижения "registered"
+
+        // Проверка достижения "registered" (Check achievement "registered")
         checkAchievement($user_id, 'registered');
-        
+
         header('Location: index.php');
         exit;
     }

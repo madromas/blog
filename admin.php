@@ -1,4 +1,8 @@
 <?php
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
 ob_start(); // Start output buffering
 require_once 'includes/config.php';
 require_once 'includes/functions.php'; require_once 'includes/auth_check.php';
@@ -718,7 +722,7 @@ include 'includes/header.php';
             <div class="admin-header">
                 <h1><i class="fas fa-tachometer-alt"></i> Dashboard</h1>
                 <div class="admin-actions">
-                    <button class="btn btn-refresh">
+                    <button onClick="window.location.reload();return false;" class="btn btn-refresh">
                         <i class="fas fa-sync-alt"></i> Refresh
                     </button>
                 </div>
@@ -869,7 +873,7 @@ include 'includes/header.php';
                     }
                     ?>
 
-                    <form action="admin.php?tab=users" method="POST">
+                    <form action="admin_update_user.php" method="POST">
                         <input type="hidden" name="user_id" value="<?= $edit_user_id ?>">
                         <input type="hidden" name="update_user" value="1"> <!-- Flag to identify the update form -->
                         <div class="form-group">
@@ -886,6 +890,15 @@ include 'includes/header.php';
                             <label for="about">About</label>
                             <textarea id="about" name="about"><?= htmlspecialchars($user['about']) ?></textarea>
                         </div>
+
+                        <div class="form-group">
+            <label for="role">User Role</label>
+            <select id="role" name="role">
+                <option value="user" <?= ($user['role'] == 'user') ? 'selected' : '' ?>>User</option>
+                <option value="moderator" <?= ($user['role'] == 'moderator') ? 'selected' : '' ?>>Moderator</option>
+                <option value="admin" <?= ($user['role'] == 'admin') ? 'selected' : '' ?>>Admin</option>
+            </select>
+        </div>
 
                         <input type="submit" value="Update User" class="btn btn-primary">
                     </form>
@@ -1167,7 +1180,7 @@ $truncated_content = substr($comment['content'], 0, 50); // Truncate the string
             <div class="admin-header">
                 <h1><i class="fas fa-history"></i> Stories management</h1>
                 <div class="admin-actions">
-                    <button class="btn btn-refresh">
+                    <button onClick="window.location.reload();return false;" class="btn btn-refresh">
                         <i class="fas fa-sync-alt"></i> Refresh
                     </button>
                 </div>
@@ -1248,7 +1261,7 @@ $truncated_content = substr($comment['content'], 0, 50); // Truncate the string
             <div class="admin-header">
                 <h1><i class="fas fa-flag"></i> Content complaints</h1>
                 <div class="admin-actions">
-                    <button class="btn btn-refresh">
+                    <button onClick="window.location.reload();return false;" class="btn btn-refresh">
                         <i class="fas fa-sync-alt"></i> Refresh
                     </button>
                 </div>
@@ -1305,9 +1318,8 @@ $truncated_content = substr($comment['content'], 0, 50); // Truncate the string
                                     <div class="user-card">
                                         <div class="section-title">Content author:</div>
                                         <div class="section-content">
-                                            <a href="profile.php?id=<?= $report['reported_user_id'] ?>" class="user-link">
-                                                <?= htmlspecialchars($report['reported_user_name']) ?>
-                                            </a>
+                                            <?= htmlspecialchars($report['reported_user_name']) ?>
+                                            
                                         </div>
                                     </div>
                                 </div>
@@ -1339,39 +1351,81 @@ $truncated_content = substr($comment['content'], 0, 50); // Truncate the string
             <div class="admin-header">
                 <h1><i class="fas fa-cog"></i> Site settings</h1>
             </div>
+    
+<?php
+// admin.php (before the <form> tag)
+
+if (isset($_SESSION['success'])) {
+    echo '<div class="alert alert-success">' . htmlspecialchars($_SESSION['success']) . '</div>';
+    unset($_SESSION['success']); // Clear the session variable
+}
+
+if (isset($_SESSION['error'])) {
+    echo '<div class="alert alert-danger">' . htmlspecialchars($_SESSION['error']) . '</div>';
+    unset($_SESSION['error']); // Clear the session variable
+}
+
+// ... (rest of your admin.php code, including the code to fetch settings)
+?>
+            
+<?php
+// admin.php (before the <form> tag)
+try {
+    $stmt = $pdo->prepare("SELECT site_name, site_url, posts_per_page, stories_lifetime, default_user_role FROM settings WHERE id = 1");
+    $stmt->execute();
+    $settings = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    // Assign settings to variables for easier use in the form
+    $site_name = htmlspecialchars($settings['site_name'] ?? ''); // Use ?? for default value if not set
+    $site_url = htmlspecialchars($settings['site_url'] ?? '');
+    $posts_per_page = htmlspecialchars($settings['posts_per_page'] ?? 10);
+    $stories_lifetime = htmlspecialchars($settings['stories_lifetime'] ?? 24);
+    $default_user_role = htmlspecialchars($settings['default_user_role'] ?? 'user');
+
+} catch (PDOException $e) {
+    error_log("Database error fetching settings: " . $e->getMessage());
+
+    // Provide default values in case of an error
+    $site_name = '';
+    $site_url = '';
+    $posts_per_page = 10;
+    $stories_lifetime = 24;
+    $default_user_role = 'user';
+}
+?>
             
             <form action="admin_update_settings.php" method="POST" class="settings-form">
                 <div class="form-group">
-                    <label for="site_name" class="form-label">Site name</label>
-                    <input type="text" id="site_name" name="site_name" class="form-input" 
-                           value="<?= htmlspecialchars(SITE_NAME) ?>">
-                </div>
-                
-                <div class="form-group">
-                    <label for="site_url" class="form-label">Site URL</label>
-                    <input type="text" id="site_url" name="site_url" class="form-input" 
-                           value="<?= htmlspecialchars(SITE_URL) ?>">
-                </div>
-                
-                <div class="form-group">
-                    <label for="posts_per_page" class="form-label">Posts on the page</label>
-                    <input type="number" id="posts_per_page" name="posts_per_page" class="form-input" 
-                           value="10" min="1" max="50">
-                </div>
-                
-                <div class="form-group">
-                    <label for="stories_lifetime" class="form-label">Lifetime of stories (hours)</label>
-                    <input type="number" id="stories_lifetime" name="stories_lifetime" class="form-input" 
-                           value="24" min="1" max="168">
-                </div>
-                
-                <div class="form-group">
-                    <label for="default_user_role" class="form-label">The default role for new users</label>
-                    <select id="default_user_role" name="default_user_role" class="form-select">
-                        <option value="user">User</option>
-                        <option value="moderator">Moderator</option>
-                    </select>
-                </div>
+    <label for="site_name" class="form-label">Site name</label>
+    <input type="text" id="site_name" name="site_name" class="form-input"
+           value="<?= $site_name ?>">
+</div>
+
+<div class="form-group">
+    <label for="site_url" class="form-label">Site URL</label>
+    <input type="text" id="site_url" name="site_url" class="form-input"
+           value="<?= $site_url ?>">
+</div>
+
+<div class="form-group">
+    <label for="posts_per_page" class="form-label">Posts on the page</label>
+    <input type="number" id="posts_per_page" name="posts_per_page" class="form-input"
+           value="<?= $posts_per_page ?>" min="1" max="50">
+</div>
+
+<div class="form-group">
+    <label for="stories_lifetime" class="form-label">Lifetime of stories (hours)</label>
+    <input type="number" id="stories_lifetime" name="stories_lifetime" class="form-input"
+           value="<?= $stories_lifetime ?>" min="1" max="168">
+</div>
+
+<div class="form-group">
+    <label for="default_user_role" class="form-label">The default role for new users</label>
+    <select id="default_user_role" name="default_user_role" class="form-select">
+        <option value="user" <?= ($default_user_role == 'user') ? 'selected' : '' ?>>User</option>
+        <option value="moderator" <?= ($default_user_role == 'moderator') ? 'selected' : '' ?>>Moderator</option>
+    </select>
+</div>
                 
                 <div class="form-actions">
                     <button type="submit" class="btn btn-primary btn-large">

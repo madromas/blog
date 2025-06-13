@@ -53,7 +53,8 @@ $comments = $stmt->fetchAll();
 $page_title = $post['title'];
 include 'includes/header.php';
 ?>
-<style>
+
+<style>    
     .comment-actions {
         margin-top: 5px;
         float:right;
@@ -248,6 +249,12 @@ include 'includes/header.php';
     </div>
     <div class="post-content">
 
+<div class="post-actions">
+
+<a href="report.php?type=post&id=<?= $post['id'] ?>" class="btn btn-warning btn-small"><i class="fas fa-exclamation-circle"></i></a>
+
+
+
 <?php
         // Check if the user is logged in
         if (isLoggedIn()) {
@@ -262,16 +269,18 @@ include 'includes/header.php';
             // If the user has permission, display the Edit and Delete buttons
             if ($is_author || $is_admin || $is_moderator) {
         ?>
-                <div class="post-actions">
+
                     <a href="edit_post.php?id=<?= $post_id ?>" class="btn btn-edit btn-small">
                                                 <i class="fas fa-edit"></i></a>
                     <a href="delete_post.php?id=<?= $post_id ?>" class="btn btn-danger btn-small" onclick="return confirm('Are you sure you want to delete this post?')">
                                                 <i class="fas fa-trash"></i></a>
-                </div>
+                
         <?php
             }
         }
         ?>
+</div>
+        
         
         <h1><?= nl2br(htmlspecialchars_decode(htmlspecialchars($post['title'], ENT_QUOTES, 'UTF-8'))) ?>
 
@@ -406,6 +415,8 @@ include 'includes/header.php';
         <?php endif; ?>
     </div>
 </div>
+
+
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {

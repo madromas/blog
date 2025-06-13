@@ -1,6 +1,10 @@
 <?php
+ini_set('display_errors', '1');
+ini_set('display_startup_errors', '1');
+error_reporting(E_ALL);
 require_once 'includes/config.php';
-require_once 'includes/functions.php'; require_once 'includes/auth_check.php';
+require_once 'includes/functions.php';
+require_once 'includes/auth_check.php';
 
 if (!isLoggedIn()) {
     header('Location: login.php');
@@ -59,16 +63,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (empty($reason)) {
         $error = 'Please indicate the reason for the complaint.';
     } else {
-        $table = $type == 'user' ? 'user_reports' : 'content_reports';
-        $field = $type == 'user' ? 'reported_user_id' : $type . '_id';
+        // Fix: Explicitly define table and field names
+        if ($type == 'user') {
+            $table = 'user_reports';
+            $field = 'reported_user_id';
+        } else {
+            $table = 'content_reports';
+            $field = $type . '_id'; // post_id, comment_id, story_id
+        }
         
         $stmt = $pdo->prepare("
-            INSERT INTO $table (reporter_id, $field, reason) 
+            INSERT INTO $table (reporter_id, $field, reason)
             VALUES (?, ?, ?)
         ");
+    
+        // Log the parameters and SQL
+        error_log("SQL: " . $stmt->queryString . ", Parameters: " . json_encode([$user_id, $content_id, $reason]));
         
-        $stmt->execute([$user_id, $content_id, $reason]);
-        $success = 'Your complaint has been sent to the moderators. Thanks!';
+        try {
+            $stmt->execute([$user_id, $content_id, $reason]);
+            $success = 'Your complaint has been sent to the moderators. Thanks!';
+        } catch (PDOException $e) {
+            $error = "Database error: " . $e->getMessage();
+            error_log("Error submitting report: " . $e->getMessage()); // Log the error
+        }
     }
 }
 

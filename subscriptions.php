@@ -118,8 +118,8 @@ include 'includes/header.php';
     }
     
     .user-avatar {
-        width: 100%;
-        height: 150px;
+        width: 100px;
+        height: 100px;
         border-radius: 50%;
         object-fit: cover;
         margin-bottom: 15px;

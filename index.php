@@ -598,19 +598,29 @@ $truncated_content = substr($comment['content'], 0, 50); // Truncate the string
 </div>
         
         <div class="sidebar-widget">
-            <h3><i class="far fa-newspaper"></i> New posts</h3>
-            <ul class="new-posts-list">
-                <?php foreach ($new_posts as $post): ?>
-                    <li>
-                        <a href="post.php?id=<?= $post['id'] ?>"><?= nl2br(htmlspecialchars_decode(htmlspecialchars($post['title'], ENT_QUOTES, 'UTF-8'))) ?>
-</a>
-                        <span class="post-meta"><?= date('d.m.Y', strtotime($post['created_at'])) ?></span>
-                    </li>
-                <?php endforeach; ?>
-            </ul>
-        </div>
+    <h3><i class="far fa-newspaper"></i> New posts</h3>
+    <ul class="new-posts-list">
+        <?php
+        $new_posts = $pdo->query("
+            SELECT id, title, created_at
+            FROM posts
+            ORDER BY created_at DESC
+            LIMIT 5   -- Limit to 5 posts
+        ")->fetchAll();
+
+        foreach ($new_posts as $post):
+        ?>
+            <li>
+                <a href="post.php?id=<?= $post['id'] ?>">
+                    <?= nl2br(htmlspecialchars_decode(htmlspecialchars($post['title'], ENT_QUOTES, 'UTF-8'))) ?>
+                </a>
+                <span class="post-meta"><?= date('d.m.Y', strtotime($post['created_at'])) ?></span>
+            </li>
+        <?php endforeach; ?>
+    </ul>
+</div>
         
-      <div class="sidebar-widget">
+<div class="sidebar-widget">
     <h3><i class="fas fa-tags"></i> Tags</h3>
     <div class="tags-cloud">
         <?php

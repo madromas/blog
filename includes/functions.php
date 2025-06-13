@@ -16,11 +16,11 @@ function isLoggedIn() {
     return !empty($_SESSION['user_id']);
 }
 
-// Получение информации о пользователе с защитой от ошибок
+// Получение информации о пользователе с защитой от ошибок (Getting user information with error protection)
 function getUser($id) {
     global $pdo;
-    
-    // Данные по умолчанию для гостя
+
+    // Данные по умолчанию для гостя (Default data for guest)
     $default_user = [
         'id' => 0,
         'username' => 'Guest',
@@ -31,41 +31,40 @@ function getUser($id) {
         'about' => '',
         'created_at' => date('Y-m-d H:i:s')
     ];
-    
+
     if (empty($id) || !is_numeric($id)) {
         return $default_user;
     }
 
     try {
-        $stmt = $pdo->prepare("SELECT * FROM users WHERE id = ? LIMIT 1");
+        $stmt = $pdo->prepare("SELECT id, username, email, avatar, role, rating, about, created_at FROM users WHERE id = ? LIMIT 1");
         $stmt->execute([$id]);
         $user = $stmt->fetch(PDO::FETCH_ASSOC);
-        
+
         if (!$user) {
             return $default_user;
         }
-        
-        // Убедимся, что все обязательные поля есть
-        return array_merge($default_user, $user);
+
+        return $user; //No need for array_merge() we have all the colums
     } catch (PDOException $e) {
         error_log("Error obtaining user: " . $e->getMessage());
         return $default_user;
     }
 }
 
-// Проверка прав пользователя (обновленная версия)
+// Проверка прав пользователя (обновленная версия) (Checking user rights (updated version))
 function hasPermission($required_role) {
     if (!isLoggedIn()) return false;
-    
+
     $user = getUser($_SESSION['user_id']);
     if (!$user) return false;
-    
-    // Добавляем гостя с самым низким уровнем прав
+
+    // Добавляем гостя с самым низким уровнем прав (Adding guest with the lowest level of rights)
     $roles = ['guest' => 0, 'user' => 1, 'moderator' => 2, 'admin' => 3];
-    
+
     $user_level = $roles[$user['role']] ?? 0;
     $required_level = $roles[$required_role] ?? 0;
-    
+
     return $user_level >= $required_level;
 }
 
@@ -235,22 +234,29 @@ function time_remaining($datetime) {
 }
 
 // Получение популярных постов с обработкой ошибок
-function getPopularPosts($limit = 20) {
+function getPopularPosts() {
     global $pdo;
-    
+
     try {
+        // Fetch the posts_per_page setting from the database
+        $stmt = $pdo->prepare("SELECT posts_per_page FROM settings WHERE id = 1"); // Assuming you have a settings row with id=1
+        $stmt->execute();
+        $setting = $stmt->fetch(PDO::FETCH_ASSOC);
+        $posts_per_page = (int)$setting['posts_per_page']; // Cast to integer for safety
+
+        // Use the setting in the SQL query
         $stmt = $pdo->prepare("
-            SELECT p.*, u.username, COUNT(c.id) as comments_count 
-            FROM posts p 
-            LEFT JOIN users u ON p.user_id = u.id 
-            LEFT JOIN comments c ON p.id = c.post_id 
-            GROUP BY p.id 
-            ORDER BY (p.upvotes - p.downvotes) DESC, comments_count DESC 
+            SELECT p.*, u.username, COUNT(c.id) as comments_count
+            FROM posts p
+            LEFT JOIN users u ON p.user_id = u.id
+            LEFT JOIN comments c ON p.id = c.post_id
+            GROUP BY p.id
+            ORDER BY (p.upvotes - p.downvotes) DESC, comments_count DESC
             LIMIT :limit
         ");
-        $stmt->bindValue(':limit', (int)$limit, PDO::PARAM_INT);
+        $stmt->bindValue(':limit', $posts_per_page, PDO::PARAM_INT); // Use the retrieved value
         $stmt->execute();
-        
+
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     } catch (PDOException $e) {
         error_log("Error receiving popular posts: " . $e->getMessage());
@@ -258,11 +264,19 @@ function getPopularPosts($limit = 20) {
     }
 }
 
-// Получение новых постов с обработкой ошибок
-function getNewPosts($limit = 20) {
+
+
+function getNewPosts() {
     global $pdo;
-    
+
     try {
+        // Fetch the posts_per_page setting from the database
+        $stmt = $pdo->prepare("SELECT posts_per_page FROM settings WHERE id = 1"); // Assuming you have a settings row with id=1
+        $stmt->execute();
+        $setting = $stmt->fetch(PDO::FETCH_ASSOC);
+        $posts_per_page = (int)$setting['posts_per_page']; // Cast to integer for safety
+
+        // Use the setting in the SQL query
         $stmt = $pdo->prepare("
             SELECT p.*, u.username 
             FROM posts p 
@@ -270,15 +284,16 @@ function getNewPosts($limit = 20) {
             ORDER BY p.created_at DESC 
             LIMIT :limit
         ");
-        $stmt->bindValue(':limit', (int)$limit, PDO::PARAM_INT);
+        $stmt->bindValue(':limit', $posts_per_page, PDO::PARAM_INT); // Use the retrieved value
         $stmt->execute();
-        
+
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     } catch (PDOException $e) {
-        error_log("Error receiving new posts: " . $e->getMessage());
+        error_log("Error receiving popular posts: " . $e->getMessage());
         return [];
     }
 }
+
 
 // Получение активных историй
 function getActiveStories($limit = 10) {
@@ -926,6 +941,18 @@ function checkRememberMeCookie($pdo) {
         }
     }
     return false; // User was not automatically logged in
+}
+
+function getReportReasons() {
+    global $pdo;
+    try {
+        $stmt = $pdo->prepare("SELECT id, reason FROM report_reasons");
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    } catch (PDOException $e) {
+        error_log("Error getting report reasons: " . $e->getMessage());
+        return [];
+    }
 }
 
 /**

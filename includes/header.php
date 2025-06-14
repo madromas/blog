@@ -1,3 +1,19 @@
+<?php
+
+// Start the session if it hasn't already been started
+if (session_status() == PHP_SESSION_NONE) {
+    session_start();
+}
+
+require_once 'includes/config.php';
+require_once 'includes/functions.php';
+
+// Attempt auto-login if not already logged in
+if (!isLoggedIn()) {  // Only check the cookie if not already logged in
+  if(checkRememberMeCookie($pdo)){
+   }
+}
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -11,6 +27,7 @@
   rel="stylesheet"
   href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.css"
 />
+<link rel="manifest" href="/manifest.json">
 <style>
         :root {
             --dark-bg: #121212;

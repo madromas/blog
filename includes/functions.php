@@ -233,18 +233,20 @@ function time_remaining($datetime) {
     }
 }
 
-// Получение популярных постов с обработкой ошибок
-function getPopularPosts() {
+// Improved getPopularPosts function with pagination support
+function getPopularPosts($page, $per_page) {
     global $pdo;
 
     try {
-        // Fetch the posts_per_page setting from the database
-        $stmt = $pdo->prepare("SELECT posts_per_page FROM settings WHERE id = 1"); // Assuming you have a settings row with id=1
+        $offset = ($page - 1) * $per_page; // Calculate the offset
+
+        // Get posts_per_page setting from the database
+        $stmt = $pdo->prepare("SELECT posts_per_page FROM settings WHERE id = 1");
         $stmt->execute();
         $setting = $stmt->fetch(PDO::FETCH_ASSOC);
-        $posts_per_page = (int)$setting['posts_per_page']; // Cast to integer for safety
+        $posts_per_page = (int)$setting['posts_per_page'];
 
-        // Use the setting in the SQL query
+        // SQL query with pagination
         $stmt = $pdo->prepare("
             SELECT p.*, u.username, COUNT(c.id) as comments_count
             FROM posts p
@@ -252,9 +254,10 @@ function getPopularPosts() {
             LEFT JOIN comments c ON p.id = c.post_id
             GROUP BY p.id
             ORDER BY (p.upvotes - p.downvotes) DESC, comments_count DESC
-            LIMIT :limit
+            LIMIT :limit OFFSET :offset
         ");
-        $stmt->bindValue(':limit', $posts_per_page, PDO::PARAM_INT); // Use the retrieved value
+        $stmt->bindValue(':limit', $per_page, PDO::PARAM_INT);
+        $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
         $stmt->execute();
 
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -264,27 +267,29 @@ function getPopularPosts() {
     }
 }
 
-
-
-function getNewPosts() {
+// Improved getNewPosts function with pagination support
+function getNewPosts($page, $per_page) {
     global $pdo;
 
     try {
-        // Fetch the posts_per_page setting from the database
-        $stmt = $pdo->prepare("SELECT posts_per_page FROM settings WHERE id = 1"); // Assuming you have a settings row with id=1
+        $offset = ($page - 1) * $per_page; // Calculate the offset
+
+        // Get posts_per_page setting from the database
+        $stmt = $pdo->prepare("SELECT posts_per_page FROM settings WHERE id = 1");
         $stmt->execute();
         $setting = $stmt->fetch(PDO::FETCH_ASSOC);
-        $posts_per_page = (int)$setting['posts_per_page']; // Cast to integer for safety
+        $posts_per_page = (int)$setting['posts_per_page'];
 
-        // Use the setting in the SQL query
+        // SQL query with pagination
         $stmt = $pdo->prepare("
-            SELECT p.*, u.username 
-            FROM posts p 
-            LEFT JOIN users u ON p.user_id = u.id 
-            ORDER BY p.created_at DESC 
-            LIMIT :limit
+            SELECT p.*, u.username
+            FROM posts p
+            LEFT JOIN users u ON p.user_id = u.id
+            ORDER BY p.created_at DESC
+            LIMIT :limit OFFSET :offset
         ");
-        $stmt->bindValue(':limit', $posts_per_page, PDO::PARAM_INT); // Use the retrieved value
+        $stmt->bindValue(':limit', $per_page, PDO::PARAM_INT);
+        $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
         $stmt->execute();
 
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -581,10 +586,13 @@ function getPostById(int $post_id): ?array {
  * @param string $image The new image URL of the post.
  * @return bool True on success, false on failure.
  */
-function updatePost(int $post_id, string $title, string $content, ?string $image, string $tags): bool {
+function updatePost(int $post_id, string $title, string $content, ?string $image, string $tags, $is_nsfw): bool {
     global $pdo;
 
-    $sql = "UPDATE posts SET title = ?, content = ?, image = ?, tags = ? WHERE id = ?"; 
+    // Explicitly cast $is_nsfw to an integer (0 or 1)
+    $is_nsfw_int = (int) $is_nsfw;
+
+    $sql = "UPDATE posts SET title = ?, content = ?, image = ?, tags = ?, is_nsfw = ? WHERE id = ?";
     $stmt = $pdo->prepare($sql);
 
     if ($stmt === false) {
@@ -592,7 +600,7 @@ function updatePost(int $post_id, string $title, string $content, ?string $image
         return false;
     }
 
-    $result = $stmt->execute([$title, $content, $image, $tags, $post_id]);
+    $result = $stmt->execute([$title, $content, $image, $tags, $is_nsfw_int, $post_id]);
 
     if ($result) {
         $stmt->closeCursor();
@@ -604,10 +612,10 @@ function updatePost(int $post_id, string $title, string $content, ?string $image
     }
 }
 
-function createPost(string $title, string $content, string $image, string $tags): bool {
+function createPost(string $title, string $content, ?string $image, string $tags, bool $is_nsfw): bool {
     global $pdo;
 
-    $sql = "INSERT INTO posts (title, content, image, tags) VALUES (?, ?, ?, ?)";  // Remove category_id from the SQL
+    $sql = "INSERT INTO posts (title, content, image, tags, is_nsfw) VALUES (?, ?, ?, ?, ?)";
     $stmt = $pdo->prepare($sql);
 
     if ($stmt === false) {
@@ -615,7 +623,7 @@ function createPost(string $title, string $content, string $image, string $tags)
         return false;
     }
 
-    $result = $stmt->execute([$title, $content, $image, $tags]);  //Remove category_id
+    $result = $stmt->execute([$title, $content, $image, $tags, $is_nsfw]);
 
     if ($result) {
         $stmt->closeCursor();

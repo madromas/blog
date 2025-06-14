@@ -82,6 +82,9 @@
             <div class="footer-content">
                 <div class="footer-logo">
                     <img src="<?= SITE_URL ?>/assets/images/logo.png" alt="<?= SITE_NAME ?>">
+                    <p>All materials are added by users.</p>
+                    <div title="Website <?= SITE_NAME ?> may contain content that is prohibited for viewing by persons under 18 years of age."><span class="adult btn-danger">18+</span>
+                    </div>
                 </div>
                 <div class="footer-links">
                     <h3>Information</h3>
@@ -104,6 +107,27 @@
             </div>
         </div>
     </footer>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const nsfwPosts = document.querySelectorAll('.nsfw-post');
+
+    nsfwPosts.forEach(post => {
+        const postId = post.dataset.postId; // Assuming you have a data-post-id attribute
+        const cookieName = 'nsfw_revealed_' + postId;
+
+        // Check if cookie exists
+        if (document.cookie.indexOf(cookieName + '=true') > -1) {
+            post.classList.add('revealed');
+        }
+
+        post.addEventListener('click', function() {
+            this.classList.add('revealed');
+            document.cookie = cookieName + '=true; max-age=' + (365 * 24 * 60 * 60) + '; path=/'; // Cookie for 1 year
+        });
+    });
+});
+</script>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -197,5 +221,6 @@ function hideEditForm(userId) {
     form.style.display = "none";
 }
 </script>
+
 </body>
 </html>

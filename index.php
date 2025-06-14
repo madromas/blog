@@ -2,7 +2,7 @@
 
 require_once 'includes/config.php';
 require_once 'includes/functions.php';
-require_once 'includes/auth_check.php';
+
 
 // Fetch stories, comments, and tags (these are independent of pagination)
 $stmt = $pdo->query("
@@ -470,7 +470,7 @@ include 'includes/header.php';
                     <h2><a href="post.php?id=<?= $post['id'] ?>"><?= nl2br(htmlspecialchars_decode(htmlspecialchars($post['title'], ENT_QUOTES, 'UTF-8'))) ?>
 </a></h2>
                     <?php if (!empty($post['image'])): ?>
-                        <div class="post-image">
+                        <div class="post-image <?php if ($post['is_nsfw'] && !isLoggedIn()) echo 'nsfw-post'; ?>" data-post-id="<?= $post['id'] ?>">
                             <a href="post.php?id=<?= $post['id'] ?>"><img src="<?= SITE_URL ?>/uploads/<?= $post['image'] ?>" alt="<?= htmlspecialchars($post['title']) ?>"></a>
                         </div>
                     <?php endif; ?>
@@ -525,7 +525,7 @@ include 'includes/header.php';
                     <h2><a href="post.php?id=<?= $post['id'] ?>"><?= nl2br(htmlspecialchars_decode(htmlspecialchars($post['title'], ENT_QUOTES, 'UTF-8'))) ?>
 </a></h2>
                     <?php if (!empty($post['image'])): ?>
-                        <div class="post-image">
+                        <div class="post-image <?php if ($post['is_nsfw'] && !isLoggedIn()) echo 'nsfw-post'; ?>" data-post-id="<?= $post['id'] ?>">
                             <a href="post.php?id=<?= $post['id'] ?>"><img src="<?= SITE_URL ?>/uploads/<?= $post['image'] ?>" alt="<?= htmlspecialchars($post['title']) ?>"></a>
                         </div>
                     <?php endif; ?>

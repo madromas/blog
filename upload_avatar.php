@@ -1,6 +1,6 @@
 <?php
 require_once 'includes/config.php';
-require_once 'includes/functions.php'; require_once 'includes/auth_check.php';
+require_once 'includes/functions.php';  
 
 if (!isLoggedIn() || !isset($_FILES['avatar'])) {
     header('Location: index.php');

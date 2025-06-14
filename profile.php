@@ -1,6 +1,6 @@
 <?php
 require_once 'includes/config.php';
-require_once 'includes/functions.php'; require_once 'includes/auth_check.php';
+require_once 'includes/functions.php';  
 
 // Get the user ID from the URL (or however you're passing it)
 $profile_user_id = isset($_GET['id']) ? (int)$_GET['id'] : 0;

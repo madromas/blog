@@ -1,7 +1,7 @@
 <?php
 require_once 'includes/config.php';
 require_once 'includes/functions.php';
-require_once 'includes/auth_check.php';
+ 
 
 if (!isLoggedIn()) {
     header('Location: login.php');
@@ -10,12 +10,14 @@ if (!isLoggedIn()) {
 
 $errors = [];
 $title = $content = $tags = '';
+$is_nsfw = false; // Initialize $is_nsfw
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $title = sanitize($_POST['title']);
     $content = sanitize($_POST['content']);
     $tags = sanitize($_POST['tags']);
-    
+    $is_nsfw = isset($_POST['is_nsfw']) ? 1 : 0;
+
     if (empty($title)) {
         $errors[] = 'Title cannot be empty';
     }
@@ -33,16 +35,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
     
     if (empty($errors)) {
-        $stmt = $pdo->prepare("
-            INSERT INTO posts (user_id, title, content, image, tags, created_at) 
-            VALUES (?, ?, ?, ?, ?, NOW())
-        ");
-        $stmt->execute([
+        $stmt = $pdo->prepare("INSERT INTO posts (user_id, title, content, image, tags, is_nsfw, created_at) VALUES (?, ?, ?, ?, ?, ?, NOW())"); // Added is_nsfw
+       $stmt->execute([
             $_SESSION['user_id'],
             $title,
             $content,
             $image,
-            $tags
+            $tags,
+            $is_nsfw
         ]);
         
         $post_id = $pdo->lastInsertId();
@@ -51,6 +51,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
 }
+
+
 
 $page_title = 'Create post';
 include 'includes/header.php';
@@ -251,6 +253,11 @@ include 'includes/header.php';
                 <textarea id="content" name="content" class="form-textarea" rows="10" required
                           placeholder="Write something interesting..."><?= htmlspecialchars($content) ?></textarea>
             </div>
+            
+<div class="">
+                <input type="checkbox" name="is_nsfw" id="is_nsfw" value="1">
+    <label for="is_nsfw">NSFW (Not Safe For Work)</label>
+</div>
             
             <div class="form-group">
                 <label for="tags" class="form-label">Tags (separated by commas)</label>

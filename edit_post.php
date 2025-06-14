@@ -1,6 +1,7 @@
 <?php
 require_once 'includes/config.php';
-require_once 'includes/functions.php'; require_once 'includes/auth_check.php';
+require_once 'includes/functions.php';
+ 
 
 // Check if the user is logged in
 if (!isLoggedIn()) {
@@ -40,13 +41,14 @@ $title = $post['title'];
 $content = $post['content'];
 $tags = $post['tags'];
 $existingImage = $post['image']; // Existing image filename
-
+$is_nsfw = $post['is_nsfw'];// Added $is_nsfw initialization
 // Handle form submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Get the form data
     $title = sanitize($_POST['title']);
     $content = sanitize($_POST['content']);
-        $tags = sanitize($_POST['tags']);
+    $tags = sanitize($_POST['tags']);
+    $is_nsfw = isset($_POST['is_nsfw']) ? 1 : 0;
 
     // Validate the form data
     if (empty($title)) {
@@ -78,7 +80,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // If there are no errors, update the post in the database
     if (empty($errors)) {
-        if (updatePost($post_id, $title, $content, $image, $tags)) {
+        if (updatePost($post_id, $title, $content, $image, $tags, $is_nsfw)) {// Pass is_nsfw to updatePost
             // Set a success message
             $_SESSION['message'] = 'Post updated successfully.';
             $_SESSION['message_type'] = 'success';
@@ -298,6 +300,11 @@ include 'includes/header.php';
             <textarea id="content" name="content" class="form-textarea" rows="10" required
                       placeholder="Write something interesting..."><?= htmlspecialchars($content) ?></textarea>
         </div>
+
+        <div class="">
+    <input type="checkbox" name="is_nsfw" id="is_nsfw" value="1" <?php if ($is_nsfw) echo 'checked'; ?>>
+    <label for="is_nsfw">NSFW (Not Safe For Work)</label>
+</div>
 
                 <div class="form-group">
             <label for="tags" class="form-label">Tags (separated by commas)</label>

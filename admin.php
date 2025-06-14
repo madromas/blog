@@ -5,7 +5,7 @@ error_reporting(E_ALL);
 
 ob_start(); // Start output buffering
 require_once 'includes/config.php';
-require_once 'includes/functions.php'; require_once 'includes/auth_check.php';
+require_once 'includes/functions.php';  
 
 if (!isLoggedIn() || !hasPermission('admin')) {
     header('Location: index.php');

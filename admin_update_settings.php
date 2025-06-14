@@ -2,7 +2,7 @@
 // admin_update_settings.php
 require_once 'includes/config.php'; // Ensure this file defines SITE_NAME, SITE_URL constants or is loading settings from a file
 require_once 'includes/functions.php';
-require_once 'includes/auth_check.php';
+ 
 
 // Проверка прав администратора (Check admin rights)
 if (!isLoggedIn() || !hasPermission('admin')) {

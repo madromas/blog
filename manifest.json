@@ -1,0 +1,26 @@
+{
+	"short_name": "Glonks",
+	"name": "Glonks",
+	"description": "Glonks.com - The least visited website on the internet",
+	"lang": "en-EN",
+	"start_url": "/",
+	"scope": "/",
+	"display": "standalone",
+	"orientation": "any",
+	"theme_color": "#121212",
+	"background_color": "#121212",
+	"icons": [
+		{
+			"src": "/assets/icons/icon-192x192.png",
+			"type": "image/png",
+			"sizes": "192x192"
+		},
+		{
+			"src": "/assets/icons/icon-512x512.png",
+			"type": "image/png",
+			"sizes": "512x512",
+			"purpose": "maskable"
+		}
+
+	]
+}

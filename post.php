@@ -1,6 +1,6 @@
 <?php
 require_once 'includes/config.php';
-require_once 'includes/functions.php'; require_once 'includes/auth_check.php';
+require_once 'includes/functions.php';  
 
 // Get the post ID from the URL
 $post_id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
@@ -299,9 +299,8 @@ include 'includes/header.php';
                 <i class="fas fa-eye"></i> <?= $post['views'] ?>
             </span>
         </div>
-        
         <?php if (!empty($post['image'])): ?>
-            <div class="post-image-full">
+            <div class="post-image-full <?php if ($post['is_nsfw'] && !isLoggedIn()) echo 'nsfw-post'; ?>" data-post-id="<?= $post['id'] ?>">
                 <a data-fancybox data-caption="<?= htmlspecialchars($post['title']) ?>" href="<?= SITE_URL ?>/uploads/<?= $post['image'] ?>"><img src="<?= SITE_URL ?>/uploads/<?= $post['image'] ?>" alt="<?= htmlspecialchars($post['title']) ?>"></a>
             </div>
         <?php endif; ?>
@@ -416,39 +415,41 @@ include 'includes/header.php';
     </div>
 </div>
 
-
-
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const fileInput = document.querySelector('.file-upload-input');
-    const fileUploadText = document.getElementById('file-upload-text');
-    const imagePreview = document.getElementById('image-preview');
-    
-    fileInput.addEventListener('change', function(e) {
-        if (e.target.files.length > 0) {
-            const file = e.target.files[0];
-            fileUploadText.textContent = file.name;
-            
-            const reader = new FileReader();
-            reader.onload = function(event) {
-                imagePreview.innerHTML = `
-                    <div class="preview-container">
-                        <img src="${event.target.result}" alt="Preview">
-                        <button type="button" class="btn btn-remove-image">
-                            <i class="fas fa-times"></i>
-                        </button>
-                    </div>
-                `;
-                
-                document.querySelector('.btn-remove-image').addEventListener('click', function() {
-                    imagePreview.innerHTML = '';
-                    fileInput.value = '';
-                    fileUploadText.textContent = '';
-                });
-            };
-            reader.readAsDataURL(file);
-        }
-    });
+
+    // Check if fileInput exists
+    if (fileInput) {
+        const fileUploadText = document.getElementById('file-upload-text');
+        const imagePreview = document.getElementById('image-preview');
+
+        fileInput.addEventListener('change', function(e) {
+            if (e.target.files.length > 0) {
+                const file = e.target.files[0];
+                fileUploadText.textContent = file.name;
+
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    imagePreview.innerHTML = `
+                        <div class="preview-container">
+                            <img src="" alt="Preview">
+                            <button type="button" class="btn btn-remove-image">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    `;
+
+                    document.querySelector('.btn-remove-image').addEventListener('click', function() {
+                        imagePreview.innerHTML = '';
+                        fileInput.value = '';
+                        fileUploadText.textContent = 'Upload an image (optional)';
+                    });
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    }
 });
 </script>
 

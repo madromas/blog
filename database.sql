@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Jun 08, 2025 at 08:22 PM
+-- Generation Time: Jun 14, 2025 at 08:35 AM
 -- Server version: 10.11.10-MariaDB-cll-lve
 -- PHP Version: 7.2.34
 
@@ -67,7 +67,8 @@ CREATE TABLE `auth_tokens` (
 --
 
 INSERT INTO `auth_tokens` (`id`, `user_id`, `selector`, `hashed_token`, `expiry`) VALUES
-(7, 9, '9bd854ec365303c7', 'bdda048b9691cf7110a59f104cb1b5e410be1e0591218e41a1ddd760bbedf482', '2025-07-08 19:49:49');
+(23, 9, '03fdcd965788ae8b', '76a01d4e57feb86e7c59e4ba0900a49897cad1958eae26e0daca6345477a8422', '2025-07-14 06:28:44'),
+(22, 9, '6f9040f0b7f39410', 'cf4c82f3f65ecbd452d0b6e41e38eec7592c51d1d76398938c0764a69a789463', '2025-07-13 22:29:24');
 
 -- --------------------------------------------------------
 
@@ -89,7 +90,6 @@ CREATE TABLE `comments` (
 --
 
 INSERT INTO `comments` (`id`, `post_id`, `user_id`, `content`, `created_at`, `image`) VALUES
-(16, 1, 9, 'Hell yea!', '2025-06-08 00:12:23', NULL),
 (30, 13, 12, 'Noice!', '2025-06-08 23:41:08', '');
 
 -- --------------------------------------------------------
@@ -108,7 +108,8 @@ CREATE TABLE `content_reports` (
   `status` enum('pending','approved','rejected') DEFAULT 'pending',
   `moderator_id` int(11) DEFAULT NULL,
   `resolved_at` timestamp NULL DEFAULT NULL,
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `reported_user_id` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;
 
 -- --------------------------------------------------------
@@ -151,23 +152,32 @@ CREATE TABLE `posts` (
   `downvotes` int(11) DEFAULT 0,
   `views` int(11) DEFAULT 0,
   `comments_count` int(11) DEFAULT 0,
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `is_nsfw` tinyint(1) DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;
 
 --
 -- Dumping data for table `posts`
 --
 
-INSERT INTO `posts` (`id`, `user_id`, `title`, `content`, `image`, `tags`, `upvotes`, `downvotes`, `views`, `comments_count`, `created_at`) VALUES
-(1, 9, 'Shannon McMullen', 'Noice', 'img_6844d55075b27.webp', '', 1, 0, 7, 12, '2025-06-08 00:12:00'),
-(3, 9, 'Helga Lovekaty', 'girl', 'img_6844e658e6f2c.webp', 'girl, sexy', 0, 0, 3, 0, '2025-06-08 01:24:40'),
-(5, 9, 'kirstentoosweet', 'What an ass', 'img_68459379bb403.jpg', 'kirstentoosweet, girl, sexy, ass', 1, 0, 2, 0, '2025-06-08 13:43:21'),
-(6, 9, 'Nicole Borda', '...', 'img_68459577d065d.jpg', 'sexy, latina', 0, 0, 3, 0, '2025-06-08 13:51:51'),
-(9, 9, 'Jump', 'https://img-9gag-fun.9cache.com/photo/an7Dmyn_460svvp9.webm', NULL, 'girl, fit', 0, 0, 1, 0, '2025-06-08 19:19:45'),
-(10, 9, 'What do girls think when they catch a man&#039;s gaze on them?', '1. I usually check right away if I&#039;m okay. Maybe there are food stains on the clothes somewhere, or food is left on the face. You can&#039;t tell if he&#039;s evaluating you or just looking at you.\r\n\r\n2. Careful peeks through a book or phone seem very pleasant to me and are not so flattering. It&#039;s just as cute when a guy turns away in embarrassment because you caught his eye. I immediately smile and blush. It&#039;s nice to know that someone is attracted to you. But if a person looks at you with obvious lust, does not look away and grins like an evil clown, it&#039;s immediately obvious.\r\n\r\n3. I&#039;m trying to figure out who he&#039;s really looking at. Probably some pretty girl. I was at an event. At some point, everyone, and I too, started dancing. Suddenly, a handsome man started making circles around me. And I just stopped and started looking around to figure out who he wanted to dance with.\r\n\r\n4. It depends on the situation. Recently, a guy came up to my car and leaned on the hood to check out my breasts. It was so disgusting. I was even upset because the guy was cute. In general, it depends on whether you know how to behave or not.\r\n\r\n5. Since this rarely happens, I always think that someone has finally seen a person in me, and even an attractive one.\r\n\r\n6. When a guy pays attention to me, it immediately seems to me that he has decided that I am strange, or something is wrong with my clothes. The idea that he might like me seems so incredible that it doesn&#039;t even occur to me.\r\n\r\n7. When you catch quick glances or playful glances, it&#039;s very flattering, and my day gets a little better. But when people stare at you without looking away, you immediately feel uneasy, and even sometimes you begin to fear for your life.\r\n\r\n8. It depends on whether I find him attractive or not. I&#039;m usually stared at by men over 30, and it&#039;s creepy because I&#039;m 18. In such a situation, I try to move to the side where I am not visible, although there have been several cases that I have been chased. If you like a guy, I can look back at him and make eyes at him.\r\n\r\n9. I answer the girls who write here that they have never been evaluated. Yes, you just didn&#039;t notice it, because most men don&#039;t stare openly, but work with a passing glance, like a ninja. It takes us less than a second to evaluate you.\r\n\r\n10. I hope he doesn&#039;t come over to get acquainted and ruin my day. I came to the hardware store to shop for repairs, not to look for new friends. I&#039;m surprised, but men in construction stare at me most of the time.\r\n\r\n11. To be honest, I don&#039;t like meeting people in inappropriate places at all. But if someone asks for it, then on the one hand you have to be polite so as not to offend the person by refusing, on the other hand, many people do not understand the word &quot;no&quot; or take it for a hidden &quot;yes&quot;.\r\n\r\n12. Listen to advice from a slightly tired lady. Never follow a girl, assessing her from behind. Don&#039;t touch her if you decide to get to know her. Don&#039;t stare openly, don&#039;t point a finger at her. Leave immediately if she has made it clear that the sympathy is not mutual. Always behave respectfully. If you want to compliment her, praise her clothes, jewelry, hairstyle, but not her figure. Always stand up for a girl if you see someone starting to behave suspiciously. In short, just be a normal person.', NULL, 'woman, think, look', 0, 0, 1, 0, '2025-06-08 21:13:12'),
-(11, 9, 'Honda N 360 keicar', 'car', 'img_684604ec5aa9a.webp', 'car, honda', 0, 0, 2, 0, '2025-06-08 21:47:24'),
-(12, 9, 'ashydeluca', '...', 'img_68461c6f1595a.webp', 'ashydeluca, girl', 0, 0, 1, 0, '2025-06-08 23:27:07'),
-(13, 9, 'Priscilla Huggins', 'https://img-9gag-fun.9cache.com/photo/adB2GBM_460svvp9.webm', NULL, 'girl, undressing, sexy', 1, 0, 5, 1, '2025-06-08 23:33:27');
+INSERT INTO `posts` (`id`, `user_id`, `title`, `content`, `image`, `tags`, `upvotes`, `downvotes`, `views`, `comments_count`, `created_at`, `is_nsfw`) VALUES
+(3, 9, 'Helga Lovekaty', 'girl', 'img_6844e658e6f2c.webp', 'girl, sexy', 0, 0, 7, 0, '2025-06-08 01:24:40', 0),
+(5, 9, 'kirstentoosweet', 'What an ass', 'img_68459379bb403.jpg', 'kirstentoosweet, girl, sexy, ass', 1, 0, 4, 0, '2025-06-08 13:43:21', 0),
+(6, 9, 'Nicole Borda', '...', 'img_684cbbc8d3c2d.jpg', 'sexy, latina', 0, 0, 10, 0, '2025-06-08 13:51:51', 0),
+(9, 9, 'Jump', 'https://img-9gag-fun.9cache.com/photo/an7Dmyn_460svvp9.webm', NULL, 'girl, fit', 0, 0, 1, 0, '2025-06-08 19:19:45', 0),
+(10, 9, 'What do girls think when they catch a man\'s gaze on them?', '1. I usually check right away if I&#039;m okay. Maybe there are food stains on the clothes somewhere, or food is left on the face. You can&#039;t tell if he&#039;s evaluating you or just looking at you.\r\n\r\n2. Careful peeks through a book or phone seem very pleasant to me and are not so flattering. It&#039;s just as cute when a guy turns away in embarrassment because you caught his eye. I immediately smile and blush. It&#039;s nice to know that someone is attracted to you. But if a person looks at you with obvious lust, does not look away and grins like an evil clown, it&#039;s immediately obvious.\r\n\r\n3. I&#039;m trying to figure out who he&#039;s really looking at. Probably some pretty girl. I was at an event. At some point, everyone, and I too, started dancing. Suddenly, a handsome man started making circles around me. And I just stopped and started looking around to figure out who he wanted to dance with.\r\n\r\n4. It depends on the situation. Recently, a guy came up to my car and leaned on the hood to check out my breasts. It was so disgusting. I was even upset because the guy was cute. In general, it depends on whether you know how to behave or not.\r\n\r\n5. Since this rarely happens, I always think that someone has finally seen a person in me, and even an attractive one.\r\n\r\n6. When a guy pays attention to me, it immediately seems to me that he has decided that I am strange, or something is wrong with my clothes. The idea that he might like me seems so incredible that it doesn&#039;t even occur to me.\r\n\r\n7. When you catch quick glances or playful glances, it&#039;s very flattering, and my day gets a little better. But when people stare at you without looking away, you immediately feel uneasy, and even sometimes you begin to fear for your life.\r\n\r\n8. It depends on whether I find him attractive or not. I&#039;m usually stared at by men over 30, and it&#039;s creepy because I&#039;m 18. In such a situation, I try to move to the side where I am not visible, although there have been several cases that I have been chased. If you like a guy, I can look back at him and make eyes at him.\r\n\r\n9. I answer the girls who write here that they have never been evaluated. Yes, you just didn&#039;t notice it, because most men don&#039;t stare openly, but work with a passing glance, like a ninja. It takes us less than a second to evaluate you.\r\n\r\n10. I hope he doesn&#039;t come over to get acquainted and ruin my day. I came to the hardware store to shop for repairs, not to look for new friends. I&#039;m surprised, but men in construction stare at me most of the time.\r\n\r\n11. To be honest, I don&#039;t like meeting people in inappropriate places at all. But if someone asks for it, then on the one hand you have to be polite so as not to offend the person by refusing, on the other hand, many people do not understand the word &quot;no&quot; or take it for a hidden &quot;yes&quot;.\r\n\r\n12. Listen to advice from a slightly tired lady. Never follow a girl, assessing her from behind. Don&#039;t touch her if you decide to get to know her. Don&#039;t stare openly, don&#039;t point a finger at her. Leave immediately if she has made it clear that the sympathy is not mutual. Always behave respectfully. If you want to compliment her, praise her clothes, jewelry, hairstyle, but not her figure. Always stand up for a girl if you see someone starting to behave suspiciously. In short, just be a normal person.', NULL, 'woman, think, look', 0, 0, 3, 0, '2025-06-08 21:13:12', 0),
+(11, 9, 'Honda N 360 keicar', 'car', 'img_684604ec5aa9a.webp', 'car, honda', 0, 0, 2, 0, '2025-06-08 21:47:24', 0),
+(12, 9, 'ashydeluca', '...', 'img_68461c6f1595a.webp', 'ashydeluca, girl', 0, 0, 4, 0, '2025-06-08 23:27:07', 0),
+(13, 9, 'Priscilla Huggins', 'https://img-9gag-fun.9cache.com/photo/adB2GBM_460svvp9.webm', NULL, 'girl, undressing, sexy', 1, 0, 9, 1, '2025-06-08 23:33:27', 0),
+(14, 9, 'M — motivation', 'A 15-year-old story. I lived with a girl. Beautiful one. We lived together for a long time, and now we graduated from college. Work has begun.\r\n\r\nOne fine evening, she comes up to me and says that we need to build a business in order to make good money. And she had an idea.\r\n\r\nThe idea was to motivate me properly. She decided that we wouldn\'t have sex until I came up with and launched an interesting and profitable project.\r\n\r\nI must pay tribute, she did well. After 3 months, she had to look for another apartment. We lived at my place.', NULL, 'motivation, story', 0, 0, 7, 0, '2025-06-09 23:15:10', 0),
+(15, 9, 'Islamyla', 'https://img-9gag-fun.9cache.com/photo/ae925Mq_460svvp9.webm', NULL, 'girl, ass', 0, 0, 6, 0, '2025-06-10 01:02:06', 0),
+(16, 9, 'Leila Faler', 'https://va.media.tumblr.com/tumblr_sjpbm65KlH1zlnyu7.mp4', NULL, 'Leila Faler, girl, ass', 1, 0, 7, 0, '2025-06-10 01:32:57', 0),
+(18, 9, 'Janna Pavlova', '...', 'img_684a13a9a7498.jpg', 'girl', 0, 0, 9, 0, '2025-06-11 23:39:21', 0),
+(19, 9, 'Angie Varona', '...', 'img_684aefa8c46e1.jpg', 'Angie Varona, girl', 0, 0, 2, 0, '2025-06-12 15:18:01', 0),
+(20, 9, 'Beauty', '...', 'img_684b2ad41501d.jpg', 'Car, bmw', 0, 0, 4, 0, '2025-06-12 19:30:28', 0),
+(21, 9, 'Relaxation time!', '...', 'img_684c88904d028.webp', '', 0, 0, 5, 0, '2025-06-13 20:22:40', 1),
+(22, 9, 'Shannon Mcmullen', '...', 'img_684cbd8996212.webp', 'girl', 0, 0, 1, 0, '2025-06-14 00:08:41', 0),
+(23, 9, 'Yovanna Ventura', '...', 'img_684ccdac3c534.webp', 'girl', 0, 0, 1, 0, '2025-06-14 01:17:32', 0);
 
 -- --------------------------------------------------------
 
@@ -206,6 +216,28 @@ CREATE TABLE `sessions` (
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `expires_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `settings`
+--
+
+CREATE TABLE `settings` (
+  `id` int(11) NOT NULL,
+  `site_name` varchar(255) NOT NULL,
+  `site_url` varchar(255) NOT NULL,
+  `posts_per_page` int(11) NOT NULL DEFAULT 10,
+  `stories_lifetime` int(11) NOT NULL DEFAULT 24,
+  `default_user_role` varchar(50) NOT NULL DEFAULT 'user'
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `settings`
+--
+
+INSERT INTO `settings` (`id`, `site_name`, `site_url`, `posts_per_page`, `stories_lifetime`, `default_user_role`) VALUES
+(1, 'Glonks.com', 'https://glonks.com', 15, 24, 'user');
 
 -- --------------------------------------------------------
 
@@ -272,8 +304,8 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`id`, `username`, `email`, `password`, `role`, `avatar`, `about`, `rating`, `created_at`, `last_login`, `followers_count`, `show_email`, `allow_private_messages`, `show_online_status`, `profile_visibility`) VALUES
-(9, 'Roman', 'madromas@yahoo.com', '$2y$10$XuBkWSCW2s/3O8izlsxSZeIPjmywyq8Vqh7FIUFMqm.6bJXrtdiii', 'admin', 'img_6840d560b4e12.jpg', 'idiot', 3, '2025-06-04 23:00:56', '2025-06-08 19:49:49', 1, 0, 0, 0, 'public'),
-(12, 'punk', 'madwaynet@gmail.com', '$2y$10$As/3pNXlCFNJPNgn7POADe8cc1kmgF4mNWfs95/KXURsq0WbAKIH2', 'user', 'default.png', NULL, 20, '2025-06-08 23:40:32', '2025-06-08 19:44:08', 0, 0, 0, 0, 'public');
+(9, 'Roman', 'madromas@yahoo.com', '$2y$10$XuBkWSCW2s/3O8izlsxSZeIPjmywyq8Vqh7FIUFMqm.6bJXrtdiii', 'admin', 'img_6840d560b4e12.jpg', 'idiot', 4, '2025-06-04 23:00:56', '2025-06-14 06:28:44', 1, 0, 0, 0, 'public'),
+(12, 'punk', 'madwaynet@gmail.com', '$2y$10$As/3pNXlCFNJPNgn7POADe8cc1kmgF4mNWfs95/KXURsq0WbAKIH2', 'user', 'default.png', 'sfvdfrv', 20, '2025-06-08 23:40:32', '2025-06-08 19:44:08', 0, 0, 0, 0, 'public');
 
 -- --------------------------------------------------------
 
@@ -336,9 +368,9 @@ CREATE TABLE `votes` (
 --
 
 INSERT INTO `votes` (`id`, `user_id`, `post_id`, `type`, `created_at`) VALUES
-(30, 9, 1, 'upvote', '2025-06-08 00:53:10'),
 (33, 9, 5, 'upvote', '2025-06-08 20:58:23'),
-(34, 9, 13, 'upvote', '2025-06-09 00:19:31');
+(34, 9, 13, 'upvote', '2025-06-09 00:19:31'),
+(35, 9, 16, 'upvote', '2025-06-10 01:33:15');
 
 --
 -- Indexes for dumped tables
@@ -405,6 +437,12 @@ ALTER TABLE `sessions`
   ADD KEY `user_id` (`user_id`);
 
 --
+-- Indexes for table `settings`
+--
+ALTER TABLE `settings`
+  ADD PRIMARY KEY (`id`);
+
+--
 -- Indexes for table `stories`
 --
 ALTER TABLE `stories`
@@ -459,7 +497,7 @@ ALTER TABLE `votes`
 -- AUTO_INCREMENT for table `auth_tokens`
 --
 ALTER TABLE `auth_tokens`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=24;
 
 --
 -- AUTO_INCREMENT for table `comments`
@@ -471,19 +509,25 @@ ALTER TABLE `comments`
 -- AUTO_INCREMENT for table `content_reports`
 --
 ALTER TABLE `content_reports`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- AUTO_INCREMENT for table `posts`
 --
 ALTER TABLE `posts`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=24;
 
 --
 -- AUTO_INCREMENT for table `private_messages`
 --
 ALTER TABLE `private_messages`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
+
+--
+-- AUTO_INCREMENT for table `settings`
+--
+ALTER TABLE `settings`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `stories`
@@ -507,13 +551,13 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `user_reports`
 --
 ALTER TABLE `user_reports`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `votes`
 --
 ALTER TABLE `votes`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=35;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=36;
 
 --
 -- Constraints for dumped tables
